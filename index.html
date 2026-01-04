@@ -357,24 +357,35 @@
                         const fileName = file.name.toLowerCase();
                         
                         // التحقق من نوع الملف
-                        if (fileName.endsWith('.geojson') || fileName.endsWith('.json')) {
+                        if (fileName.endsWith('.geojson')) {
                             // معالجة ملف GeoJSON
                             const geoJsonData = JSON.parse(content);
                             if (geoJsonData && (geoJsonData.type === 'FeatureCollection' || geoJsonData.type === 'Feature' || geoJsonData.type === 'GeometryCollection')) {
                                 addGeoJsonToMap(geoJsonData, file.name);
-                                showMessage('success', `تم تحميل ${file.name} بنجاح`);
+                                showMessage('success', `تم تحميل ${file.name} بنجاح (GeoJSON)`);
                             } else {
-                                // محاولة معالجته كملف JSON عادي (نقاط)
-                                const data = parseFileContent(content, file.name);
+                                showMessage('error', `ملف GeoJSON غير صالح: ${file.name}`);
+                            }
+                        } else if (fileName.endsWith('.json')) {
+                            // معالجة ملف JSON
+                            const jsonData = JSON.parse(content);
+                            
+                            // محاولة كـ GeoJSON أولاً
+                            if (jsonData && (jsonData.type === 'FeatureCollection' || jsonData.type === 'Feature' || jsonData.type === 'GeometryCollection')) {
+                                addGeoJsonToMap(jsonData, file.name);
+                                showMessage('success', `تم تحميل ${file.name} بنجاح (GeoJSON)`);
+                            } else {
+                                // محاولة كملف JSON عادي (نقاط)
+                                const data = parseJsonFile(jsonData, file.name);
                                 if (data && data.length > 0) {
                                     addLayerToMap(data, file.name);
-                                    showMessage('success', `تم تحميل ${file.name} بنجاح`);
+                                    showMessage('success', `تم تحميل ${file.name} بنجاح (JSON)`);
                                 } else {
-                                    showMessage('error', `فشل تحليل الملف: ${file.name}`);
+                                    showMessage('error', `فشل تحليل الملف JSON: ${file.name}. تأكد من أن الملف يحتوي على بيانات جغرافية صحيحة.`);
                                 }
                             }
                         } else {
-                            // معالجة ملف نصي عادي
+                            // معالجة ملف نصي عادي (.txt)
                             const data = parseFileContent(content, file.name);
                             if (data && data.length > 0) {
                                 addLayerToMap(data, file.name);
@@ -399,40 +410,127 @@
             fileInput.value = '';
         }
         
-        // دالة لتحليل محتوى الملف
+        // دالة لتحليل ملف JSON
+        function parseJsonFile(jsonObj, fileName) {
+            const data = [];
+            
+            // إذا كان مصفوفة مباشرة
+            if (Array.isArray(jsonObj)) {
+                jsonObj.forEach(obj => {
+                    const point = extractPointFromObject(obj);
+                    if (point) data.push(point);
+                });
+                if (data.length > 0) return data;
+            }
+            
+            // إذا كان كائن يحتوي على data
+            if (jsonObj.data && Array.isArray(jsonObj.data)) {
+                jsonObj.data.forEach(obj => {
+                    const point = extractPointFromObject(obj);
+                    if (point) data.push(point);
+                });
+                if (data.length > 0) return data;
+            }
+            
+            // إذا كان كائن يحتوي على points
+            if (jsonObj.points && Array.isArray(jsonObj.points)) {
+                jsonObj.points.forEach(obj => {
+                    const point = extractPointFromObject(obj);
+                    if (point) data.push(point);
+                });
+                if (data.length > 0) return data;
+            }
+            
+            // إذا كان كائن يحتوي على coordinates
+            if (jsonObj.coordinates && Array.isArray(jsonObj.coordinates)) {
+                jsonObj.coordinates.forEach(coord => {
+                    if (Array.isArray(coord) && coord.length >= 2) {
+                        data.push({
+                            lat: coord[1] || coord[0],
+                            lng: coord[0] || coord[1],
+                            velocity: 0,
+                            date: '',
+                            time: '',
+                            sourceID: {}
+                        });
+                    }
+                });
+                if (data.length > 0) return data;
+            }
+            
+            // إذا كان كائن واحد
+            const point = extractPointFromObject(jsonObj);
+            if (point) {
+                data.push(point);
+                return data;
+            }
+            
+            return data;
+        }
+        
+        // دالة لاستخراج نقطة من كائن
+        function extractPointFromObject(obj) {
+            // الصيغة: {location: {lat, lng}}
+            if (obj.location && obj.location.lat !== undefined && obj.location.lng !== undefined) {
+                return {
+                    lat: obj.location.lat,
+                    lng: obj.location.lng,
+                    velocity: obj.velocity || 0,
+                    date: obj.current_Date || obj.date || '',
+                    time: obj.current_time || obj.time || '',
+                    sourceID: obj.sourceID || {}
+                };
+            }
+            
+            // الصيغة: {lat, lng}
+            if (obj.lat !== undefined && obj.lng !== undefined) {
+                return {
+                    lat: obj.lat,
+                    lng: obj.lng,
+                    velocity: obj.velocity || 0,
+                    date: obj.current_Date || obj.date || '',
+                    time: obj.current_time || obj.time || '',
+                    sourceID: obj.sourceID || {}
+                };
+            }
+            
+            // الصيغة: {latitude, longitude}
+            if (obj.latitude !== undefined && obj.longitude !== undefined) {
+                return {
+                    lat: obj.latitude,
+                    lng: obj.longitude,
+                    velocity: obj.velocity || 0,
+                    date: obj.current_Date || obj.date || '',
+                    time: obj.current_time || obj.time || '',
+                    sourceID: obj.sourceID || {}
+                };
+            }
+            
+            // الصيغة: {coordinates: [lng, lat]}
+            if (obj.coordinates && Array.isArray(obj.coordinates) && obj.coordinates.length >= 2) {
+                return {
+                    lat: obj.coordinates[1],
+                    lng: obj.coordinates[0],
+                    velocity: obj.velocity || 0,
+                    date: obj.current_Date || obj.date || '',
+                    time: obj.current_time || obj.time || '',
+                    sourceID: obj.sourceID || {}
+                };
+            }
+            
+            return null;
+        }
+        
+        // دالة لتحليل محتوى الملف النصي (سطر بسطر)
         function parseFileContent(content, fileName) {
             const data = [];
             
             // محاولة تحليل الملف كـ JSON كامل أولاً
             try {
                 const jsonObj = JSON.parse(content.trim());
-                // إذا كان مصفوفة من الكائنات
-                if (Array.isArray(jsonObj)) {
-                    jsonObj.forEach(obj => {
-                        if (obj.location && obj.location.lat && obj.location.lng) {
-                            data.push({
-                                lat: obj.location.lat,
-                                lng: obj.location.lng,
-                                velocity: obj.velocity || 0,
-                                date: obj.current_Date || '',
-                                time: obj.current_time || '',
-                                sourceID: obj.sourceID || {}
-                            });
-                        }
-                    });
-                    if (data.length > 0) return data;
-                }
-                // إذا كان كائن واحد
-                else if (jsonObj.location && jsonObj.location.lat && jsonObj.location.lng) {
-                    data.push({
-                        lat: jsonObj.location.lat,
-                        lng: jsonObj.location.lng,
-                        velocity: jsonObj.velocity || 0,
-                        date: jsonObj.current_Date || '',
-                        time: jsonObj.current_time || '',
-                        sourceID: jsonObj.sourceID || {}
-                    });
-                    return data;
+                const parsedData = parseJsonFile(jsonObj, fileName);
+                if (parsedData && parsedData.length > 0) {
+                    return parsedData;
                 }
             } catch (e) {
                 // إذا فشل، جرب كسطر بسطر
@@ -443,16 +541,8 @@
             lines.forEach((line, index) => {
                 try {
                     const obj = JSON.parse(line.trim());
-                    if (obj.location && obj.location.lat && obj.location.lng) {
-                        data.push({
-                            lat: obj.location.lat,
-                            lng: obj.location.lng,
-                            velocity: obj.velocity || 0,
-                            date: obj.current_Date || '',
-                            time: obj.current_time || '',
-                            sourceID: obj.sourceID || {}
-                        });
-                    }
+                    const point = extractPointFromObject(obj);
+                    if (point) data.push(point);
                 } catch (e) {
                     console.warn(`خطأ في السطر ${index + 1} من الملف ${fileName}:`, e.message);
                 }
