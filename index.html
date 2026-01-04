@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة سورية - عرض البيانات الجغرافية</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            direction: rtl;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .file-input-wrapper input[type="file"]:hover {
+            background: #e8f4f8;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-export {
+            background: #27ae60;
+        }
+        
+        .btn-export:hover {
+            background: #229954;
+        }
+        
+        .btn-clear {
+            background: #e74c3c;
+        }
+        
+        .btn-clear:hover {
+            background: #c0392b;
+        }
+        
+        .layers-list {
+            margin-top: 20px;
+        }
+        
+        .layers-list h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .layer-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-right: 4px solid #3498db;
+            transition: all 0.3s;
+        }
+        
+        .layer-item:hover {
+            background: #e8f4f8;
+            transform: translateX(-5px);
+        }
+        
+        .layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .layer-name {
+            font-weight: bold;
+            color: #2c3e50;
+            flex: 1;
+        }
+        
+        .layer-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        }
+        
+        .layer-toggle:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .layer-toggle:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        }
+        
+        .layer-toggle.hidden {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(149, 165, 166, 0.2);
+        }
+        
+        .layer-toggle.hidden:hover {
+            background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7a 100%);
+            box-shadow: 0 4px 8px rgba(149, 165, 166, 0.3);
+        }
+        
+        .toggle-icon {
+            font-size: 16px;
+            display: inline-block;
+            line-height: 1;
+        }
+        
+        .toggle-text {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .layer-export-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+        }
+        
+        .layer-export-btn:hover {
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .layer-export-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+        }
+        
+        .layer-info {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .layer-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .stats {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        .stats-item {
+            margin: 5px 0;
+        }
+        
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>🗺️ خريطة سورية</h1>
+            
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".txt" multiple>
+                </div>
+                <button class="btn" onclick="loadFiles()">📁 تحميل الملفات</button>
+                <button class="btn btn-export" onclick="exportToJSON()">💾 تصدير إلى JSON</button>
+                <button class="btn btn-clear" onclick="clearAllLayers()">🗑️ مسح الكل</button>
+                
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+            </div>
+            
+            <div class="layers-list">
+                <h2>الطبقات المحملة</h2>
+                <div id="layersContainer"></div>
+            </div>
+            
+            <div class="stats">
+                <div class="stats-item">عدد الطبقات: <span id="layersCount">0</span></div>
+                <div class="stats-item">إجمالي النقاط: <span id="totalPoints">0</span></div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // تهيئة الخريطة - مركز سورية
+        const map = L.map('map').setView([35.0, 38.0], 7);
+        
+        // إضافة طبقة الخريطة الأساسية
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+        
+        // تخزين الطبقات والبيانات
+        let layers = [];
+        let layerGroups = [];
+        let colors = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#c0392b', '#16a085'
+        ];
+        let colorIndex = 0;
+        
+        // دالة لتحميل الملفات
+        function loadFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                showMessage('error', 'الرجاء اختيار ملف واحد على الأقل');
+                return;
+            }
+            
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        const data = parseFileContent(content, file.name);
+                        
+                        if (data && data.length > 0) {
+                            addLayerToMap(data, file.name);
+                            showMessage('success', `تم تحميل ${file.name} بنجاح`);
+                        } else {
+                            showMessage('error', `فشل تحليل الملف: ${file.name}`);
+                        }
+                    } catch (error) {
+                        showMessage('error', `خطأ في قراءة الملف ${file.name}: ${error.message}`);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showMessage('error', `خطأ في قراءة الملف: ${file.name}`);
+                };
+                
+                reader.readAsText(file);
+            });
+            
+            // إعادة تعيين حقل الملف
+            fileInput.value = '';
+        }
+        
+        // دالة لتحليل محتوى الملف
+        function parseFileContent(content, fileName) {
+            const lines = content.split('\n').filter(line => line.trim());
+            const data = [];
+            
+            lines.forEach((line, index) => {
+                try {
+                    const obj = JSON.parse(line.trim());
+                    if (obj.location && obj.location.lat && obj.location.lng) {
+                        data.push({
+                            lat: obj.location.lat,
+                            lng: obj.location.lng,
+                            velocity: obj.velocity || 0,
+                            date: obj.current_Date || '',
+                            time: obj.current_time || '',
+                            sourceID: obj.sourceID || {}
+                        });
+                    }
+                } catch (e) {
+                    console.warn(`خطأ في السطر ${index + 1} من الملف ${fileName}:`, e.message);
+                }
+            });
+            
+            return data;
+        }
+        
+        // دالة لإضافة طبقة إلى الخريطة
+        function addLayerToMap(data, fileName) {
+            if (data.length === 0) return;
+            
+            const color = colors[colorIndex % colors.length];
+            colorIndex++;
+            
+            // إنشاء مجموعة طبقات جديدة
+            const layerGroup = L.layerGroup().addTo(map);
+            
+            // إنشاء مصفوفة الإحداثيات للخط
+            const coordinates = data.map(point => [point.lat, point.lng]);
+            
+            // رسم الخط
+            const polyline = L.polyline(coordinates, {
+                color: color,
+                weight: 4,
+                opacity: 0.8
+            }).addTo(layerGroup);
+            
+            // إضافة علامات للنقاط المهمة (البداية والنهاية)
+            const startMarker = L.circleMarker([data[0].lat, data[0].lng], {
+                radius: 8,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                fillOpacity: 1
+            }).addTo(layerGroup);
+            
+            startMarker.bindPopup(`
+                <strong>نقطة البداية</strong><br>
+                الملف: ${fileName}<br>
+                التاريخ: ${data[0].date}<br>
+                الوقت: ${data[0].time}<br>
+                السرعة: ${data[0].velocity} km/h
+            `);
+            
+            if (data.length > 1) {
+                const endMarker = L.circleMarker([data[data.length - 1].lat, data[data.length - 1].lng], {
+                    radius: 8,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    fillOpacity: 1
+                }).addTo(layerGroup);
+                
+                endMarker.bindPopup(`
+                    <strong>نقطة النهاية</strong><br>
+                    الملف: ${fileName}<br>
+                    التاريخ: ${data[data.length - 1].date}<br>
+                    الوقت: ${data[data.length - 1].time}<br>
+                    السرعة: ${data[data.length - 1].velocity} km/h
+                `);
+            }
+            
+            // حفظ المعلومات
+            const layerInfo = {
+                id: Date.now() + Math.random(),
+                name: fileName,
+                data: data,
+                color: color,
+                layerGroup: layerGroup,
+                visible: true
+            };
+            
+            layers.push(layerInfo);
+            layerGroups.push(layerGroup);
+            
+            // إضافة إلى القائمة الجانبية
+            addLayerToSidebar(layerInfo);
+            
+            // تحديث الإحصائيات
+            updateStats();
+            
+            // ضبط الخريطة لإظهار جميع الطبقات
+            if (layers.length === 1) {
+                const bounds = polyline.getBounds();
+                map.fitBounds(bounds, { padding: [50, 50] });
+            } else {
+                const allBounds = L.latLngBounds([]);
+                layerGroups.forEach(lg => {
+                    lg.eachLayer(layer => {
+                        if (layer instanceof L.Polyline) {
+                            allBounds.extend(layer.getBounds());
+                        }
+                    });
+                });
+                if (!allBounds.isValid()) {
+                    const bounds = polyline.getBounds();
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        }
+        
+        // دالة لإضافة طبقة إلى القائمة الجانبية
+        function addLayerToSidebar(layerInfo) {
+            const container = document.getElementById('layersContainer');
+            const layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.id = `layer-${layerInfo.id}`;
+            
+            layerItem.innerHTML = `
+                <div class="layer-header">
+                    <div class="layer-name">${layerInfo.name}</div>
+                    <div class="layer-controls">
+                        <div class="layer-color" style="background: ${layerInfo.color}"></div>
+                        <div class="layer-toggle ${layerInfo.visible ? '' : 'hidden'}" 
+                             onclick="toggleLayer(${layerInfo.id})">
+                            <span class="toggle-icon">${layerInfo.visible ? '👁️' : '🚫'}</span>
+                            <span class="toggle-text">${layerInfo.visible ? 'إظهار' : 'إخفاء'}</span>
+                        </div>
+                        <button class="layer-export-btn" onclick="exportLayer(${layerInfo.id})" title="تصدير هذا الملف">
+                            💾
+                        </button>
+                    </div>
+                </div>
+                <div class="layer-info">
+                    عدد النقاط: ${layerInfo.data.length}<br>
+                    التاريخ: ${layerInfo.data[0]?.date || 'غير محدد'}
+                </div>
+            `;
+            
+            container.appendChild(layerItem);
+        }
+        
+        // دالة لإظهار/إخفاء طبقة
+        function toggleLayer(layerId) {
+            const layerInfo = layers.find(l => l.id === layerId);
+            if (!layerInfo) return;
+            
+            layerInfo.visible = !layerInfo.visible;
+            
+            if (layerInfo.visible) {
+                map.addLayer(layerInfo.layerGroup);
+            } else {
+                map.removeLayer(layerInfo.layerGroup);
+            }
+            
+            const toggleBtn = document.querySelector(`#layer-${layerId} .layer-toggle`);
+            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+            const toggleText = toggleBtn.querySelector('.toggle-text');
+            
+            if (layerInfo.visible) {
+                toggleBtn.classList.remove('hidden');
+                toggleIcon.textContent = '👁️';
+                toggleText.textContent = 'إظهار';
+            } else {
+                toggleBtn.classList.add('hidden');
+                toggleIcon.textContent = '🚫';
+                toggleText.textContent = 'إخفاء';
+            }
+        }
+        
+        // دالة لتصدير طبقة واحدة
+        function exportLayer(layerId) {
+            const layerInfo = layers.find(l => l.id === layerId);
+            if (!layerInfo) {
+                showMessage('error', 'الطبقة غير موجودة');
+                return;
+            }
+            
+            const exportData = {
+                fileName: layerInfo.name,
+                exportDate: new Date().toISOString(),
+                color: layerInfo.color,
+                pointCount: layerInfo.data.length,
+                data: layerInfo.data
+            };
+            
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // استخدام نفس اسم الملف مع تغيير الامتداد إلى json
+            const fileName = layerInfo.name.replace(/\.txt$/i, '.json');
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('success', `تم تصدير ${layerInfo.name} بنجاح`);
+        }
+        
+        // دالة لتصدير جميع البيانات إلى JSON
+        function exportToJSON() {
+            if (layers.length === 0) {
+                showMessage('error', 'لا توجد بيانات للتصدير');
+                return;
+            }
+            
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                totalLayers: layers.length,
+                layers: layers.map(layer => ({
+                    name: layer.name,
+                    color: layer.color,
+                    pointCount: layer.data.length,
+                    data: layer.data
+                }))
+            };
+            
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `syria_map_data_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('success', 'تم تصدير جميع البيانات بنجاح');
+        }
+        
+        // دالة لمسح جميع الطبقات
+        function clearAllLayers() {
+            if (layers.length === 0) {
+                showMessage('error', 'لا توجد طبقات للمسح');
+                return;
+            }
+            
+            if (confirm('هل أنت متأكد من مسح جميع الطبقات؟')) {
+                layers.forEach(layer => {
+                    map.removeLayer(layer.layerGroup);
+                });
+                
+                layers = [];
+                layerGroups = [];
+                colorIndex = 0;
+                
+                document.getElementById('layersContainer').innerHTML = '';
+                updateStats();
+                
+                showMessage('success', 'تم مسح جميع الطبقات');
+            }
+        }
+        
+        // دالة لتحديث الإحصائيات
+        function updateStats() {
+            document.getElementById('layersCount').textContent = layers.length;
+            const totalPoints = layers.reduce((sum, layer) => sum + layer.data.length, 0);
+            document.getElementById('totalPoints').textContent = totalPoints;
+        }
+        
+        // دالة لعرض الرسائل
+        function showMessage(type, message) {
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+            
+            if (type === 'error') {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 5000);
+            } else {
+                successMsg.textContent = message;
+                successMsg.style.display = 'block';
+                errorMsg.style.display = 'none';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // السماح بسحب وإفلات الملفات
+        const fileInput = document.getElementById('fileInput');
+        const mapContainer = document.getElementById('map');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            mapContainer.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            mapContainer.addEventListener(eventName, () => {
+                mapContainer.style.opacity = '0.7';
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            mapContainer.addEventListener(eventName, () => {
+                mapContainer.style.opacity = '1';
+            }, false);
+        });
+        
+        mapContainer.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                loadFiles();
+            }
+        }, false);
+    </script>
+</body>
+</html>
+
