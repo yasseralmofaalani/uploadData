@@ -18,29 +18,51 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             direction: rtl;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
         
         .container {
             display: flex;
             height: 100vh;
+            flex-direction: row;
         }
         
         .sidebar {
-            width: 350px;
-            background: #fff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            width: 400px;
+            min-width: 400px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            padding: 25px;
             overflow-y: auto;
+            overflow-x: visible;
             z-index: 1000;
+            position: relative;
+        }
+        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         }
         
         .sidebar h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 24px;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 700;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
+            text-align: center;
+            letter-spacing: 0.5px;
         }
         
         .upload-section {
@@ -54,134 +76,196 @@
         
         .file-input-wrapper input[type="file"] {
             width: 100%;
-            padding: 12px;
-            border: 2px dashed #3498db;
-            border-radius: 8px;
-            background: #f8f9fa;
+            padding: 15px;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.3s ease;
         }
         
         .file-input-wrapper input[type="file"]:hover {
-            background: #e8f4f8;
+            background: linear-gradient(135deg, #e8edff 0%, #f0f4ff 100%);
+            border-color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
         .btn {
             width: 100%;
-            padding: 12px;
-            background: #3498db;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background 0.3s;
-            margin-top: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: opacity 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 12px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         
         .btn:hover {
-            background: #2980b9;
+            opacity: 0.9;
+            box-shadow: 0 4px 18px rgba(102, 126, 234, 0.35);
         }
         
         .btn-export {
-            background: #27ae60;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
         }
         
         .btn-export:hover {
-            background: #229954;
+            opacity: 0.9;
+            box-shadow: 0 4px 18px rgba(17, 153, 142, 0.35);
         }
         
         .btn-clear {
-            background: #e74c3c;
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            box-shadow: 0 4px 15px rgba(238, 9, 121, 0.3);
         }
         
         .btn-clear:hover {
-            background: #c0392b;
+            opacity: 0.9;
+            box-shadow: 0 4px 18px rgba(238, 9, 121, 0.35);
         }
         
         .layers-list {
-            margin-top: 20px;
+            margin-top: 25px;
         }
         
         .layers-list h2 {
             color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 18px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e8e8e8;
         }
         
         .layer-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            border-right: 4px solid #3498db;
-            transition: all 0.3s;
+            background: #ffffff;
+            padding: 18px;
+            margin-bottom: 16px;
+            border-radius: 16px;
+            border: 1px solid #e8e8e8;
+            border-right: 4px solid;
+            border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: visible;
         }
         
         .layer-item:hover {
-            background: #e8f4f8;
-            transform: translateX(-5px);
+            border-color: #d0d0d0;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
         }
         
         .layer-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            gap: 12px;
+            min-width: 0;
+            flex-wrap: wrap;
+            overflow: visible;
         }
         
         .layer-name {
-            font-weight: bold;
+            font-weight: 600;
             color: #2c3e50;
             flex: 1;
+            font-size: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+            max-width: 180px;
+            line-height: 1.4;
+        }
+        
+        .layer-name:hover {
+            white-space: normal;
+            word-break: break-word;
+            max-width: 100%;
+            position: relative;
+            z-index: 10;
+            background: white;
+            padding: 6px 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
         }
         
         .layer-controls {
             display: flex;
             gap: 8px;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            flex-shrink: 0;
+            min-width: 0;
+            overflow: visible;
+        }
+        
+        .layer-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-left: 0;
+            border: 2px solid #e8e8e8;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            flex-shrink: 0;
         }
         
         .layer-toggle {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            padding: 8px 14px;
+            gap: 6px;
+            padding: 10px 16px;
             cursor: pointer;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background: #2ecc71;
             color: white;
             font-size: 13px;
             font-weight: 600;
             transition: all 0.2s ease;
             user-select: none;
-            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 2px 6px rgba(46, 204, 113, 0.25);
+            min-width: 100px;
+            white-space: nowrap;
+            position: relative;
         }
         
-        .layer-toggle:hover {
-            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        .layer-toggle.visible {
+            background: #2ecc71;
+            border-color: #27ae60;
+            box-shadow: 0 2px 6px rgba(46, 204, 113, 0.25);
         }
         
-        .layer-toggle:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        .layer-toggle.visible:hover {
+            background: #27ae60;
+            border-color: #229954;
+            opacity: 0.95;
+            box-shadow: 0 3px 8px rgba(46, 204, 113, 0.35);
         }
         
         .layer-toggle.hidden {
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(149, 165, 166, 0.2);
+            background: #e74c3c;
+            border-color: #c0392b;
+            box-shadow: 0 2px 6px rgba(231, 76, 60, 0.25);
         }
         
         .layer-toggle.hidden:hover {
-            background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7a 100%);
-            box-shadow: 0 4px 8px rgba(149, 165, 166, 0.3);
+            background: #c0392b;
+            border-color: #a93226;
+            opacity: 0.95;
+            box-shadow: 0 3px 8px rgba(231, 76, 60, 0.35);
         }
         
         .toggle-icon {
@@ -200,43 +284,62 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
-            padding: 8px 12px;
+            padding: 10px 14px;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 10px;
             border: none;
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            background: #11998e;
             color: white;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
             user-select: none;
-            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+            box-shadow: 0 2px 6px rgba(17, 153, 142, 0.25);
+            min-width: 44px;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
         }
         
         .layer-export-btn:hover {
-            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+            background: #0d7a70;
+            opacity: 0.9;
         }
         
-        .layer-export-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+        .layer-delete-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 10px 14px;
+            cursor: pointer;
+            border-radius: 10px;
+            border: none;
+            background: #ee0979;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            user-select: none;
+            box-shadow: 0 2px 6px rgba(238, 9, 121, 0.25);
+            min-width: 44px;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+        }
+        
+        .layer-delete-btn:hover {
+            background: #d1086a;
+            opacity: 0.9;
         }
         
         .layer-info {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        .layer-color {
-            width: 30px;
-            height: 20px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-left: 10px;
-            border: 1px solid #ddd;
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 10px;
+            line-height: 1.7;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
         }
         
         .map-container {
@@ -250,36 +353,268 @@
         }
         
         .stats {
-            background: #ecf0f1;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
             font-size: 14px;
             color: #2c3e50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
         }
         
         .stats-item {
-            margin: 5px 0;
+            margin: 8px 0;
+            font-weight: 500;
+        }
+        
+        .stats-item span {
+            font-weight: 700;
+            color: #667eea;
         }
         
         .error-message {
-            background: #e74c3c;
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
             color: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 12px;
             font-size: 14px;
             display: none;
+            box-shadow: 0 4px 12px rgba(238, 9, 121, 0.3);
+            animation: slideIn 0.3s ease;
         }
         
         .success-message {
-            background: #27ae60;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 12px;
             font-size: 14px;
             display: none;
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 50vh;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            }
+            
+            .sidebar::before {
+                width: 100%;
+                height: 4px;
+                top: 0;
+                right: 0;
+                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .sidebar h1 {
+                font-size: 24px;
+            }
+            
+            .map-container {
+                height: 50vh;
+                min-height: 400px;
+            }
+            
+            .layer-item {
+                padding: 16px;
+                margin-bottom: 14px;
+            }
+            
+            .layer-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+            
+            .layer-controls {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .layer-name {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .layer-toggle {
+                flex: 1;
+                min-width: 120px;
+                padding: 10px 14px;
+            }
+            
+            .layer-export-btn,
+            .layer-delete-btn {
+                width: 44px;
+                height: 44px;
+                padding: 10px;
+            }
+            
+            .layer-color {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .btn {
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 15px;
+                max-height: 45vh;
+            }
+            
+            .sidebar h1 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+            
+            .btn {
+                padding: 11px 16px;
+                font-size: 13px;
+                margin-top: 10px;
+            }
+            
+            .layer-item {
+                padding: 14px;
+                margin-bottom: 12px;
+                border-radius: 12px;
+            }
+            
+            .layer-header {
+                gap: 12px;
+            }
+            
+            .layer-controls {
+                gap: 6px;
+                width: 100%;
+            }
+            
+            .layer-toggle {
+                padding: 9px 12px;
+                font-size: 12px;
+                min-width: 100px;
+                flex: 1;
+            }
+            
+            .layer-export-btn,
+            .layer-delete-btn {
+                width: 40px;
+                height: 40px;
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .layer-name {
+                max-width: 100%;
+                font-size: 14px;
+            }
+            
+            .layer-color {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .toggle-text {
+                display: none;
+            }
+            
+            .layer-info {
+                font-size: 12px;
+                margin-top: 8px;
+                padding-top: 8px;
+            }
+            
+            .map-container {
+                height: 55vh;
+                min-height: 350px;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .layer-controls {
+                flex-wrap: nowrap;
+            }
+            
+            .layer-toggle {
+                min-width: 100px;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 360px;
+                min-width: 360px;
+            }
+            
+            .layer-controls {
+                gap: 6px;
+            }
+            
+            .layer-toggle {
+                min-width: 90px;
+                padding: 10px 14px;
+            }
+            
+            .layer-export-btn,
+            .layer-delete-btn {
+                width: 40px;
+                height: 40px;
+                padding: 8px;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 320px;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
     </style>
 </head>
@@ -579,8 +914,8 @@
             const color = colors[colorIndex % colors.length];
             colorIndex++;
             
-            // إنشاء مجموعة طبقات جديدة
-            const layerGroup = L.layerGroup().addTo(map);
+            // إنشاء مجموعة طبقات جديدة (بدون إضافتها للخريطة - الحالة الافتراضية مخفية)
+            const layerGroup = L.layerGroup();
             
             // إنشاء طبقة GeoJSON مع تنسيق مخصص
             const geoJsonLayer = L.geoJSON(geoJsonData, {
@@ -647,7 +982,7 @@
                 }
             }
             
-            // حفظ المعلومات
+            // حفظ المعلومات (الحالة الافتراضية: مخفية)
             const layerInfo = {
                 id: Date.now() + Math.random(),
                 name: fileName,
@@ -655,7 +990,7 @@
                 geoJsonData: geoJsonData,
                 color: color,
                 layerGroup: layerGroup,
-                visible: true,
+                visible: false,
                 isGeoJson: true
             };
             
@@ -668,25 +1003,8 @@
             // تحديث الإحصائيات
             updateStats();
             
-            // ضبط الخريطة لإظهار جميع الطبقات
-            if (layers.length === 1) {
-                const bounds = geoJsonLayer.getBounds();
-                if (bounds.isValid()) {
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                }
-            } else {
-                const allBounds = L.latLngBounds([]);
-                layerGroups.forEach(lg => {
-                    lg.eachLayer(layer => {
-                        if (layer.getBounds) {
-                            allBounds.extend(layer.getBounds());
-                        }
-                    });
-                });
-                if (allBounds.isValid()) {
-                    map.fitBounds(allBounds, { padding: [50, 50] });
-                }
-            }
+            // لا نقوم بضبط الخريطة تلقائياً لأن الطبقة مخفية افتراضياً
+            // يمكن للمستخدم إظهار الطبقة ثم ضبط الخريطة يدوياً
         }
         
         // دالة لإضافة طبقة إلى الخريطة
@@ -696,8 +1014,8 @@
             const color = colors[colorIndex % colors.length];
             colorIndex++;
             
-            // إنشاء مجموعة طبقات جديدة
-            const layerGroup = L.layerGroup().addTo(map);
+            // إنشاء مجموعة طبقات جديدة (بدون إضافتها للخريطة - الحالة الافتراضية مخفية)
+            const layerGroup = L.layerGroup();
             
             // إنشاء مصفوفة الإحداثيات للخط
             const coordinates = data.map(point => [point.lat, point.lng]);
@@ -744,14 +1062,14 @@
                 `);
             }
             
-            // حفظ المعلومات
+            // حفظ المعلومات (الحالة الافتراضية: مخفية)
             const layerInfo = {
                 id: Date.now() + Math.random(),
                 name: fileName,
                 data: data,
                 color: color,
                 layerGroup: layerGroup,
-                visible: true,
+                visible: false,
                 isGeoJson: false,
                 rawContent: data.rawContent || null, // حفظ المحتوى الأصلي
                 isJsonLines: data.isJsonLines || false // هل الملف بصيغة JSON Lines
@@ -766,24 +1084,8 @@
             // تحديث الإحصائيات
             updateStats();
             
-            // ضبط الخريطة لإظهار جميع الطبقات
-            if (layers.length === 1) {
-                const bounds = polyline.getBounds();
-                map.fitBounds(bounds, { padding: [50, 50] });
-            } else {
-                const allBounds = L.latLngBounds([]);
-                layerGroups.forEach(lg => {
-                    lg.eachLayer(layer => {
-                        if (layer instanceof L.Polyline) {
-                            allBounds.extend(layer.getBounds());
-                        }
-                    });
-                });
-                if (!allBounds.isValid()) {
-                    const bounds = polyline.getBounds();
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                }
-            }
+            // لا نقوم بضبط الخريطة تلقائياً لأن الطبقة مخفية افتراضياً
+            // يمكن للمستخدم إظهار الطبقة ثم ضبط الخريطة يدوياً
         }
         
         // دالة لإضافة طبقة إلى القائمة الجانبية
@@ -795,19 +1097,23 @@
             
             layerItem.innerHTML = `
                 <div class="layer-header">
-                    <div class="layer-name">${layerInfo.name}</div>
+                    <div class="layer-name" title="${layerInfo.name}">${layerInfo.name}</div>
                     <div class="layer-controls">
                         <div class="layer-color" style="background: ${layerInfo.color}"></div>
-                        <div class="layer-toggle ${layerInfo.visible ? '' : 'hidden'}" 
-                             onclick="toggleLayer(${layerInfo.id})">
+                        <button class="layer-toggle ${layerInfo.visible ? 'visible' : 'hidden'}" 
+                             onclick="toggleLayer(${layerInfo.id})" 
+                             title="${layerInfo.visible ? 'إخفاء الطبقة' : 'إظهار الطبقة'}">
                             <span class="toggle-icon">${layerInfo.visible ? '👁️' : '🚫'}</span>
                             <span class="toggle-text">${layerInfo.visible ? 'إظهار' : 'إخفاء'}</span>
-                        </div>
+                        </button>
                         <button class="layer-export-btn" onclick="exportLayer(${layerInfo.id})" title="تصدير هذا الملف">
                             💾
                         </button>
                         <button class="layer-export-btn" onclick="exportLayerToGeoJSON(${layerInfo.id})" title="تصدير إلى GeoJSON">
                             🗺️
+                        </button>
+                        <button class="layer-delete-btn" onclick="deleteLayer(${layerInfo.id})" title="حذف الطبقة">
+                            🗑️
                         </button>
                     </div>
                 </div>
@@ -829,6 +1135,25 @@
             
             if (layerInfo.visible) {
                 map.addLayer(layerInfo.layerGroup);
+                // ضبط الخريطة لإظهار الطبقة عند إظهارها لأول مرة
+                const bounds = layerInfo.layerGroup.getBounds();
+                if (bounds && bounds.isValid()) {
+                    // إذا كانت هناك طبقات أخرى ظاهرة، قم بتوسيع الحدود
+                    const visibleLayers = layers.filter(l => l.visible && l.id !== layerId);
+                    if (visibleLayers.length > 0) {
+                        const allBounds = L.latLngBounds([]);
+                        visibleLayers.forEach(l => {
+                            const b = l.layerGroup.getBounds();
+                            if (b && b.isValid()) {
+                                allBounds.extend(b);
+                            }
+                        });
+                        allBounds.extend(bounds);
+                        map.fitBounds(allBounds, { padding: [50, 50] });
+                    } else {
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                }
             } else {
                 map.removeLayer(layerInfo.layerGroup);
             }
@@ -839,9 +1164,11 @@
             
             if (layerInfo.visible) {
                 toggleBtn.classList.remove('hidden');
+                toggleBtn.classList.add('visible');
                 toggleIcon.textContent = '👁️';
                 toggleText.textContent = 'إظهار';
             } else {
+                toggleBtn.classList.remove('visible');
                 toggleBtn.classList.add('hidden');
                 toggleIcon.textContent = '🚫';
                 toggleText.textContent = 'إخفاء';
@@ -966,6 +1293,162 @@
             return flattened;
         }
         
+        // دالة لتحويل البيانات إلى الصيغة المطلوبة (GeoJSON Feature)
+        function convertToRequestedGeoJSONFormat(layerInfo) {
+            const features = [];
+            
+            if (layerInfo.data && layerInfo.data.length > 0) {
+                layerInfo.data.forEach((point, index) => {
+                    let originalData = point.originalData;
+                    
+                    // إنشاء Feature Point
+                    const feature = {
+                        type: "Feature",
+                        geometry: {
+                            type: "Point",
+                            coordinates: [point.lng, point.lat]
+                        },
+                        properties: {}
+                    };
+                    
+                    // تحويل البيانات إلى الصيغة المطلوبة
+                    if (originalData) {
+                        // SourceID
+                        if (originalData.SourceID) {
+                            feature.properties.SourceID_Type = originalData.SourceID.Type !== undefined ? originalData.SourceID.Type : (originalData.SourceID.type !== undefined ? originalData.SourceID.type : 1);
+                            feature.properties.SourceID_Index = originalData.SourceID.Index !== undefined ? originalData.SourceID.Index : (originalData.SourceID.index !== undefined ? originalData.SourceID.index : 0);
+                        } else if (originalData.sourceID) {
+                            feature.properties.SourceID_Type = originalData.sourceID.Type !== undefined ? originalData.sourceID.Type : (originalData.sourceID.type !== undefined ? originalData.sourceID.type : 1);
+                            feature.properties.SourceID_Index = originalData.sourceID.Index !== undefined ? originalData.sourceID.Index : (originalData.sourceID.index !== undefined ? originalData.sourceID.index : 0);
+                        } else {
+                            feature.properties.SourceID_Type = 1;
+                            feature.properties.SourceID_Index = 0;
+                        }
+                        
+                        // Airport
+                        if (originalData.Airport) {
+                            feature.properties.Airport_Location_IsEmpty = originalData.Airport.Location ? (originalData.Airport.Location.IsEmpty === true) : true;
+                            feature.properties.Airport_Location_Lat = originalData.Airport.Location && originalData.Airport.Location.Lat !== undefined ? originalData.Airport.Location.Lat : (originalData.Airport.Location && originalData.Airport.Location.lat !== undefined ? originalData.Airport.Location.lat : 0.0);
+                            feature.properties.Airport_Location_Lng = originalData.Airport.Location && originalData.Airport.Location.Lng !== undefined ? originalData.Airport.Location.Lng : (originalData.Airport.Location && originalData.Airport.Location.lng !== undefined ? originalData.Airport.Location.lng : 0.0);
+                            feature.properties.Airport_NickName = originalData.Airport.NickName || originalData.Airport.nickName || "Unknown";
+                        } else {
+                            feature.properties.Airport_Location_IsEmpty = true;
+                            feature.properties.Airport_Location_Lat = 0.0;
+                            feature.properties.Airport_Location_Lng = 0.0;
+                            feature.properties.Airport_NickName = "Unknown";
+                        }
+                        
+                        // TakeOffTime
+                        feature.properties.TakeOffTime = originalData.TakeOffTime || originalData.takeOffTime || "1970-01-01T00:00:00+03:00";
+                        
+                        // PlaneType
+                        feature.properties.PlaneType = originalData.PlaneType !== undefined ? originalData.PlaneType : (originalData.planeType !== undefined ? originalData.planeType : 3901);
+                        
+                        // Trip_ID
+                        feature.properties.Trip_ID = originalData.Trip_ID || originalData.TripID || originalData.trip_ID || originalData.tripID || "";
+                        
+                        // Observer_ID
+                        if (originalData.Observer_ID) {
+                            feature.properties.Observer_ID_Type = originalData.Observer_ID.Type !== undefined ? originalData.Observer_ID.Type : (originalData.Observer_ID.type !== undefined ? originalData.Observer_ID.type : 3);
+                            feature.properties.Observer_ID_Index = originalData.Observer_ID.Index !== undefined ? originalData.Observer_ID.Index : (originalData.Observer_ID.index !== undefined ? originalData.Observer_ID.index : 2);
+                        } else if (originalData.ObserverID) {
+                            feature.properties.Observer_ID_Type = originalData.ObserverID.Type !== undefined ? originalData.ObserverID.Type : (originalData.ObserverID.type !== undefined ? originalData.ObserverID.type : 3);
+                            feature.properties.Observer_ID_Index = originalData.ObserverID.Index !== undefined ? originalData.ObserverID.Index : (originalData.ObserverID.index !== undefined ? originalData.ObserverID.index : 2);
+                        } else if (originalData.observer_ID) {
+                            feature.properties.Observer_ID_Type = originalData.observer_ID.Type !== undefined ? originalData.observer_ID.Type : (originalData.observer_ID.type !== undefined ? originalData.observer_ID.type : 3);
+                            feature.properties.Observer_ID_Index = originalData.observer_ID.Index !== undefined ? originalData.observer_ID.Index : (originalData.observer_ID.index !== undefined ? originalData.observer_ID.index : 2);
+                        } else {
+                            feature.properties.Observer_ID_Type = 3;
+                            feature.properties.Observer_ID_Index = 2;
+                        }
+                        
+                        // Time - تحويل من current_time إلى ISO format
+                        let timeStr = originalData.Time || originalData.time || originalData.current_time || "";
+                        if (timeStr && timeStr.includes("_")) {
+                            // تحويل من "12_04_53.144" إلى ISO format
+                            const dateStr = originalData.current_Date || originalData.current_date || "";
+                            if (dateStr) {
+                                // تحويل "2025_11_27" إلى "2025-11-27"
+                                const dateParts = dateStr.replace(/_/g, "-");
+                                // تحويل "12_04_53.144" إلى "12:04:53.144"
+                                let timeParts = timeStr.replace(/_/g, ":");
+                                // التأكد من وجود الميلي ثانية
+                                if (!timeParts.includes(".")) {
+                                    timeParts += ".000";
+                                }
+                                timeStr = `${dateParts}T${timeParts}+03:00`;
+                            }
+                        } else if (!timeStr) {
+                            timeStr = "1970-01-01T00:00:00+03:00";
+                        }
+                        feature.properties.Time = timeStr;
+                        
+                        // Altitude
+                        feature.properties.Altitude = originalData.Altitude !== undefined ? originalData.Altitude : (originalData.altitude !== undefined ? originalData.altitude : 0.0);
+                        
+                        // Speed
+                        feature.properties.Speed = originalData.Speed !== undefined ? originalData.Speed : (originalData.speed !== undefined ? originalData.speed : (originalData.velocity !== undefined ? originalData.velocity : 0.0));
+                        
+                        // Location
+                        if (originalData.Location) {
+                            feature.properties.Location_IsEmpty = originalData.Location.IsEmpty === true;
+                            feature.properties.Location_Lat = originalData.Location.Lat !== undefined ? originalData.Location.Lat : (originalData.Location.lat !== undefined ? originalData.Location.lat : point.lat);
+                            feature.properties.Location_Lng = originalData.Location.Lng !== undefined ? originalData.Location.Lng : (originalData.Location.lng !== undefined ? originalData.Location.lng : point.lng);
+                        } else if (originalData.location) {
+                            feature.properties.Location_IsEmpty = false;
+                            feature.properties.Location_Lat = originalData.location.lat !== undefined ? originalData.location.lat : (originalData.location.Lat !== undefined ? originalData.location.Lat : point.lat);
+                            feature.properties.Location_Lng = originalData.location.lng !== undefined ? originalData.location.lng : (originalData.location.Lng !== undefined ? originalData.location.Lng : point.lng);
+                        } else {
+                            feature.properties.Location_IsEmpty = false;
+                            feature.properties.Location_Lat = point.lat;
+                            feature.properties.Location_Lng = point.lng;
+                        }
+                    } else {
+                        // إذا لم تكن البيانات الأصلية متوفرة، استخدم القيم الافتراضية
+                        feature.properties.SourceID_Type = 1;
+                        feature.properties.SourceID_Index = point.sourceID && point.sourceID.index !== undefined ? point.sourceID.index : 0;
+                        feature.properties.Airport_Location_IsEmpty = true;
+                        feature.properties.Airport_Location_Lat = 0.0;
+                        feature.properties.Airport_Location_Lng = 0.0;
+                        feature.properties.Airport_NickName = "Unknown";
+                        feature.properties.TakeOffTime = "1970-01-01T00:00:00+03:00";
+                        feature.properties.PlaneType = point.planeType || 3901;
+                        feature.properties.Trip_ID = point.tripID || "";
+                        feature.properties.Observer_ID_Type = 3;
+                        feature.properties.Observer_ID_Index = point.observerID && point.observerID.index !== undefined ? point.observerID.index : 2;
+                        
+                        // تحويل الوقت
+                        let timeStr = point.time || "";
+                        if (timeStr && timeStr.includes("_")) {
+                            const dateStr = point.date || "";
+                            if (dateStr) {
+                                const dateParts = dateStr.replace(/_/g, "-");
+                                let timeParts = timeStr.replace(/_/g, ":");
+                                // التأكد من وجود الميلي ثانية
+                                if (!timeParts.includes(".")) {
+                                    timeParts += ".000";
+                                }
+                                timeStr = `${dateParts}T${timeParts}+03:00`;
+                            }
+                        } else if (!timeStr) {
+                            timeStr = "1970-01-01T00:00:00+03:00";
+                        }
+                        feature.properties.Time = timeStr;
+                        
+                        feature.properties.Altitude = point.altitude || 0.0;
+                        feature.properties.Speed = point.velocity || 0.0;
+                        feature.properties.Location_IsEmpty = false;
+                        feature.properties.Location_Lat = point.lat;
+                        feature.properties.Location_Lng = point.lng;
+                    }
+                    
+                    features.push(feature);
+                });
+            }
+            
+            return features;
+        }
+        
         // دالة لتحويل طبقة إلى GeoJSON متوافق مع ArcGIS Pro
         function convertLayerToGeoJSON(layerInfo) {
             const features = [];
@@ -1082,18 +1565,19 @@
                 return;
             }
             
-            const geoJsonData = convertLayerToGeoJSON(layerInfo);
+            // استخدام الصيغة المطلوبة
+            const features = convertToRequestedGeoJSONFormat(layerInfo);
             
-            // التحقق من صحة GeoJSON
-            if (!geoJsonData || !geoJsonData.type || geoJsonData.type !== 'FeatureCollection') {
-                showMessage('error', 'خطأ في إنشاء GeoJSON');
-                return;
-            }
-            
-            if (!geoJsonData.features || geoJsonData.features.length === 0) {
+            if (!features || features.length === 0) {
                 showMessage('error', 'لا توجد بيانات للتصدير');
                 return;
             }
+            
+            // إنشاء FeatureCollection
+            const geoJsonData = {
+                type: 'FeatureCollection',
+                features: features
+            };
             
             // التأكد من أن جميع الإحداثيات صحيحة
             geoJsonData.features.forEach(feature => {
@@ -1112,12 +1596,16 @@
                 }
             });
             
+            // استخدام اسم الملف الأصلي مع تغيير الامتداد إلى .geojson
+            const originalFileName = layerInfo.name;
+            const fileName = originalFileName.replace(/\.(txt|json)$/i, '') + '.geojson';
+            
             const jsonString = JSON.stringify(geoJsonData, null, 2);
             const blob = new Blob([jsonString], { type: 'application/geo+json; charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'syria.geojson';
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1133,111 +1621,29 @@
                 return;
             }
             
-            // دمج جميع الطبقات في FeatureCollection واحد
-            const allFeatures = [];
-            
-            layers.forEach((layer, index) => {
-                const geoJsonData = convertLayerToGeoJSON(layer);
-                if (geoJsonData.features && geoJsonData.features.length > 0) {
-                    // إضافة اسم الطبقة كبادئة لخصائص كل feature
-                    geoJsonData.features.forEach(feature => {
-                        if (!feature.properties) {
-                            feature.properties = {};
-                        }
-                        feature.properties.layerIndex = index;
-                        feature.properties.layerName = layer.name;
-                    });
-                    allFeatures.push(...geoJsonData.features);
-                }
-            });
-            
-            const geoJsonData = {
-                type: 'FeatureCollection',
-                features: allFeatures,
-                metadata: {
-                    exportDate: new Date().toISOString(),
-                    totalLayers: layers.length,
-                    totalFeatures: allFeatures.length,
-                    layers: layers.map(l => ({
-                        name: l.name,
-                        pointCount: l.data.length,
-                        color: l.color
-                    }))
-                }
-            };
-            
-            const jsonString = JSON.stringify(geoJsonData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/geo+json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'syria.geojson';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showMessage('success', `تم تصدير ${layers.length} طبقة إلى GeoJSON بنجاح - جاهز للاستخدام في ArcGIS Pro`);
-        }
-        
-        // دالة لتنزيل جميع الملفات بصيغتها الأصلية
-        function downloadAllFiles() {
-            if (layers.length === 0) {
-                showMessage('error', 'لا توجد ملفات للتنزيل');
-                return;
-            }
-            
-            // تنزيل كل ملف على حدة مع تأخير بسيط بين كل ملف
+            // تصدير كل ملف منفصل بنفس اسم الملف المصدر
             layers.forEach((layer, index) => {
                 setTimeout(() => {
-                    // استخدام نفس منطق exportLayer
-                    let exportContent;
-                    let fileName;
-                    let mimeType = 'application/json';
+                    // استخدام الصيغة المطلوبة
+                    const features = convertToRequestedGeoJSONFormat(layer);
                     
-                    if (layer.isGeoJson && layer.geoJsonData) {
-                        exportContent = JSON.stringify(layer.geoJsonData, null, 2);
-                        fileName = layer.name.replace(/\.(txt|json)$/i, '.geojson');
-                    } else if (layer.rawContent && layer.isJsonLines) {
-                        exportContent = layer.rawContent;
-                        fileName = layer.name.endsWith('.txt') ? layer.name : (layer.name + '.txt');
-                        mimeType = 'text/plain';
-                    } else if (layer.data && layer.data.length > 0 && layer.data[0].originalData) {
-                        exportContent = layer.data
-                            .map(point => point.originalData)
-                            .filter(obj => obj !== null && obj !== undefined)
-                            .map(obj => JSON.stringify(obj))
-                            .join('\n');
-                        fileName = layer.name.endsWith('.txt') ? layer.name : (layer.name + '.txt');
-                        mimeType = 'text/plain';
-                    } else {
-                        const exportData = {
-                            fileName: layer.name,
-                            exportDate: new Date().toISOString(),
-                            color: layer.color,
-                            pointCount: layer.data.length,
-                            data: layer.data.map(point => ({
-                                Location: {
-                                    IsEmpty: false,
-                                    Lat: point.lat,
-                                    Lng: point.lng
-                                },
-                                Time: point.time || '',
-                                Speed: point.velocity || 0,
-                                Altitude: point.altitude || 0,
-                                Trip_ID: point.tripID || '',
-                                SourceID: point.sourceID || {},
-                                Observer_ID: point.observerID || {},
-                                PlaneType: point.planeType || 0,
-                                Airport: point.airport || {},
-                                TakeOffTime: point.takeOffTime || ''
-                            }))
-                        };
-                        exportContent = JSON.stringify(exportData, null, 2);
-                        fileName = layer.name.replace(/\.txt$/i, '.json');
+                    if (!features || features.length === 0) {
+                        console.warn(`لا توجد بيانات للتصدير في الملف: ${layer.name}`);
+                        return;
                     }
                     
-                    const blob = new Blob([exportContent], { type: mimeType });
+                    // إنشاء FeatureCollection لكل ملف
+                    const geoJsonData = {
+                        type: 'FeatureCollection',
+                        features: features
+                    };
+                    
+                    // استخدام اسم الملف الأصلي مع تغيير الامتداد إلى .geojson
+                    const originalFileName = layer.name;
+                    const fileName = originalFileName.replace(/\.(txt|json)$/i, '') + '.geojson';
+                    
+                    const jsonString = JSON.stringify(geoJsonData, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/geo+json; charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -1249,7 +1655,51 @@
                 }, index * 300); // تأخير 300ms بين كل ملف
             });
             
-            showMessage('success', `جاري تنزيل ${layers.length} ملف...`);
+            showMessage('success', `جاري تصدير ${layers.length} ملف إلى GeoJSON بنجاح - جاهز للاستخدام في ArcGIS Pro`);
+        }
+        
+        // دالة لتنزيل جميع الملفات بصيغة GeoJSON المطلوبة
+        function downloadAllFiles() {
+            if (layers.length === 0) {
+                showMessage('error', 'لا توجد ملفات للتنزيل');
+                return;
+            }
+            
+            // تنزيل كل ملف على حدة مع تأخير بسيط بين كل ملف
+            layers.forEach((layer, index) => {
+                setTimeout(() => {
+                    // استخدام الصيغة المطلوبة (GeoJSON Feature)
+                    const features = convertToRequestedGeoJSONFormat(layer);
+                    
+                    if (!features || features.length === 0) {
+                        console.warn(`لا توجد بيانات للتصدير في الملف: ${layer.name}`);
+                        return;
+                    }
+                    
+                    // إنشاء FeatureCollection
+                    const geoJsonData = {
+                        type: 'FeatureCollection',
+                        features: features
+                    };
+                    
+                    // استخدام اسم الملف الأصلي مع تغيير الامتداد إلى .geojson
+                    const originalFileName = layer.name;
+                    const fileName = originalFileName.replace(/\.(txt|json)$/i, '') + '.geojson';
+                    
+                    const jsonString = JSON.stringify(geoJsonData, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/geo+json; charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, index * 300); // تأخير 300ms بين كل ملف
+            });
+            
+            showMessage('success', `جاري تنزيل ${layers.length} ملف بصيغة GeoJSON...`);
         }
         
         // دالة لتصدير جميع البيانات إلى JSON
@@ -1282,6 +1732,42 @@
             URL.revokeObjectURL(url);
             
             showMessage('success', 'تم تصدير جميع البيانات بنجاح');
+        }
+        
+        // دالة لحذف طبقة واحدة
+        function deleteLayer(layerId) {
+            const layerInfo = layers.find(l => l.id === layerId);
+            if (!layerInfo) {
+                showMessage('error', 'الطبقة غير موجودة');
+                return;
+            }
+            
+            if (confirm(`هل أنت متأكد من حذف الطبقة "${layerInfo.name}"؟`)) {
+                // إزالة الطبقة من الخريطة
+                map.removeLayer(layerInfo.layerGroup);
+                
+                // إزالة من المصفوفات
+                const index = layers.findIndex(l => l.id === layerId);
+                if (index > -1) {
+                    layers.splice(index, 1);
+                }
+                
+                const groupIndex = layerGroups.findIndex(lg => lg === layerInfo.layerGroup);
+                if (groupIndex > -1) {
+                    layerGroups.splice(groupIndex, 1);
+                }
+                
+                // إزالة من الواجهة
+                const layerElement = document.getElementById(`layer-${layerId}`);
+                if (layerElement) {
+                    layerElement.remove();
+                }
+                
+                // تحديث الإحصائيات
+                updateStats();
+                
+                showMessage('success', `تم حذف الطبقة "${layerInfo.name}" بنجاح`);
+            }
         }
         
         // دالة لمسح جميع الطبقات
