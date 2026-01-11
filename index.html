@@ -437,6 +437,113 @@
             }
         }
         
+        /* Modal Styles */
+        .folder-select-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .folder-select-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-content h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            padding: 18px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-btn-clean {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .modal-btn-clean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .modal-btn-unclean {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+        
+        .modal-btn-unclean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .modal-btn-cancel {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .modal-btn-cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -686,13 +793,15 @@
                     <input type="file" id="fileInput" accept=".txt,.geojson,.json" multiple>
                 </div>
                 <button class="btn" onclick="loadFiles()">📁 تحميل الملفات</button>
-                <button class="btn btn-export" onclick="selectDirectory()" id="selectFolderBtn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📂 اختيار مجلد التصدير</button>
-                <div id="folderStatus" style="font-size: 12px; color: #2c3e50; margin-top: 5px; margin-bottom: 10px; display: none;">
-                    <span style="color: #2ecc71;">✓</span> <span id="folderStatusText">تم اختيار المجلد</span>
+                <button class="btn btn-export" onclick="selectCleanDataFolder()" id="selectCleanFolderBtn" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); margin-bottom: 10px;">📁 اختيار مجلد البيانات النظيفة</button>
+                <div id="cleanFolderStatus" style="font-size: 12px; color: #2c3e50; margin-top: 5px; margin-bottom: 10px; display: none;">
+                    <span style="color: #2ecc71;">✓</span> <span id="cleanFolderStatusText">تم اختيار مجلد البيانات النظيفة</span>
                 </div>
-                <button class="btn btn-export" onclick="exportToJSON()">💾 تصدير إلى JSON</button>
-                <button class="btn btn-export" onclick="exportToGeoJSON()">🗺️ تصدير إلى GeoJSON (ArcGIS)</button>
-                <button class="btn btn-export" onclick="downloadAllFiles()">⬇️ تنزيل جميع الملفات</button>
+                <button class="btn btn-export" onclick="selectUncleanDataFolder()" id="selectUncleanFolderBtn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); margin-bottom: 10px;">📁 اختيار مجلد البيانات غير النظيفة</button>
+                <div id="uncleanFolderStatus" style="font-size: 12px; color: #2c3e50; margin-top: 5px; margin-bottom: 10px; display: none;">
+                    <span style="color: #2ecc71;">✓</span> <span id="uncleanFolderStatusText">تم اختيار مجلد البيانات غير النظيفة</span>
+                </div>
+                <button class="btn btn-export" onclick="generateHTMLReport()" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">🌐 إنشاء تقرير HTML تفاعلي</button>
                 <button class="btn btn-clear" onclick="clearAllLayers()">🗑️ حذف جميع الطبقات</button>
                 <button class="btn" id="drawBtn" onclick="toggleDrawMode()" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">✏️ رسم نقاط على الخريطة</button>
                 
@@ -721,6 +830,12 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Leaflet Draw JS -->
     <script src="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <!-- html2canvas for capturing map -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2pdf for HTML to PDF conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
         // تهيئة الخريطة - مركز سورية
@@ -730,6 +845,32 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
+        }).addTo(map);
+        
+        // إضافة بوصلة الشمال (Compass)
+        const compassControl = L.control({position: 'topleft'});
+        compassControl.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'compass-control');
+            div.style.cssText = 'margin: 10px; z-index: 1000;';
+            div.innerHTML = `
+                <div style="background: white; border: 2px solid rgba(0,0,0,0.3); border-radius: 8px; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: default; width: 50px; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size: 28px; text-align: center; font-weight: bold; color: #e74c3c; line-height: 1; margin-bottom: 4px;">N</div>
+                    <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 15px solid #e74c3c; margin-top: 2px;"></div>
+                    <div style="font-size: 10px; color: #666; margin-top: 4px; text-align: center;">شمال</div>
+                </div>
+            `;
+            L.DomEvent.disableClickPropagation(div);
+            L.DomEvent.disableScrollPropagation(div);
+            return div;
+        };
+        compassControl.addTo(map);
+        
+        // إضافة مقياس الرسم (Scale Bar)
+        L.control.scale({
+            position: 'bottomleft',
+            metric: true,
+            imperial: false,
+            maxWidth: 200
         }).addTo(map);
         
         // تخزين الطبقات والبيانات
@@ -981,6 +1122,63 @@
             return data;
         }
         
+        // دالة لإنشاء علامات البداية والنهاية الجميلة
+        function createPathMarkers(startCoord, endCoord, layerGroup) {
+            // إنشاء أيقونة نقطة البداية
+            const startIcon = L.divIcon({
+                className: 'custom-path-marker start-marker',
+                html: '<div style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(46, 204, 113, 0.4); border: 2px solid white; font-size: 12px;">🚀</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+            });
+            
+            // إنشاء أيقونة نقطة النهاية
+            const endIcon = L.divIcon({
+                className: 'custom-path-marker end-marker',
+                html: '<div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(231, 76, 60, 0.4); border: 2px solid white; font-size: 12px;">🏁</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+            });
+            
+            // إنشاء العلامات
+            const startMarker = L.marker([startCoord[0], startCoord[1]], { icon: startIcon })
+                .addTo(layerGroup)
+                .bindPopup('📍 نقطة البداية');
+            
+            const endMarker = L.marker([endCoord[0], endCoord[1]], { icon: endIcon })
+                .addTo(layerGroup)
+                .bindPopup('🏁 نقطة النهاية');
+            
+            return { startMarker, endMarker };
+        }
+        
+        // دالة لتحديث علامات البداية والنهاية عند تعديل المسار
+        function updatePathMarkers(polyline) {
+            if (!polyline.startMarker || !polyline.endMarker) return;
+            
+            const coords = polyline.getLatLngs();
+            if (coords.length >= 2) {
+                const startCoord = coords[0];
+                const endCoord = coords[coords.length - 1];
+                
+                // تحديث موقع علامة البداية
+                if (startCoord.lat !== undefined && startCoord.lng !== undefined) {
+                    polyline.startMarker.setLatLng([startCoord.lat, startCoord.lng]);
+                } else {
+                    polyline.startMarker.setLatLng([startCoord[0], startCoord[1]]);
+                }
+                
+                // تحديث موقع علامة النهاية
+                if (endCoord.lat !== undefined && endCoord.lng !== undefined) {
+                    polyline.endMarker.setLatLng([endCoord.lat, endCoord.lng]);
+                } else {
+                    polyline.endMarker.setLatLng([endCoord[0] || endCoord.lat, endCoord[1] || endCoord.lng]);
+                }
+            }
+        }
+        
         // دالة لإضافة GeoJSON إلى الخريطة
         function addGeoJsonToMap(geoJsonData, fileName) {
             const color = colors[colorIndex % colors.length];
@@ -1057,6 +1255,16 @@
                     opacity: 0.9,
                     smoothFactor: 1.0
             }).addTo(layerGroup);
+                
+                // إضافة علامات البداية والنهاية إذا كان المسار يحتوي على نقطتين على الأقل
+                if (coords.length >= 2) {
+                    const startCoord = coords[0];
+                    const endCoord = coords[coords.length - 1];
+                    const pathMarkers = createPathMarkers(startCoord, endCoord, layerGroup);
+                    // حفظ مراجع العلامات في المسار
+                    polyline.startMarker = pathMarkers.startMarker;
+                    polyline.endMarker = pathMarkers.endMarker;
+                }
                 
                 // إضافة إمكانية تحديد المسار الكامل
                 let isPathSelected = false;
@@ -1143,6 +1351,9 @@
                                             m.setLatLng(newCoords[i]);
                                         }
                                     });
+                                    
+                                    // تحديث علامات البداية والنهاية
+                                    updatePathMarkers(polyline);
                                 }
                             });
                             
@@ -1382,6 +1593,9 @@
                         }
                     });
                     
+                    // تحديث علامات البداية والنهاية
+                    updatePathMarkers(polyline);
+                    
                     selectedMarkers.clear();
                     updateDeleteButton();
                     showMessage('success', `تم حذف ${indicesToDelete.length} نقطة بنجاح`);
@@ -1418,37 +1632,108 @@
             
             layerGroup.polylines = polylines;
             
-            // استخراج النقاط من GeoJSON للإحصائيات
+            // استخراج النقاط من GeoJSON للإحصائيات مع جميع البيانات
+            // حفظ خريطة لكل إحداثي مع بياناته (لربط النقاط ببياناتها)
+            const pointDataMap = new Map();
             let points = [];
+            
             if (geoJsonData.type === 'FeatureCollection') {
-                geoJsonData.features.forEach(feature => {
+                geoJsonData.features.forEach((feature, index) => {
+                    const props = feature.properties || {};
+                    const timeValue = props.Time || props.time || '';
+                    const tripId = props.Trip_ID || props.trip_ID || '';
+                    
                     if (feature.geometry.type === 'Point') {
-                        points.push({
+                        const key = `${feature.geometry.coordinates[0]}_${feature.geometry.coordinates[1]}`;
+                        const pointData = {
                             lat: feature.geometry.coordinates[1],
-                            lng: feature.geometry.coordinates[0]
-                        });
+                            lng: feature.geometry.coordinates[0],
+                            time: timeValue,
+                            Time: timeValue,
+                            tripID: tripId,
+                            Trip_ID: tripId,
+                            originalData: {
+                                Time: timeValue,
+                                TakeOffTime: props.TakeOffTime || props.takeOffTime || '',
+                                Altitude: props.Altitude || props.altitude || 0,
+                                Speed: props.Speed || props.speed || 0,
+                                Trip_ID: tripId,
+                                ...props
+                            }
+                        };
+                        points.push(pointData);
+                        pointDataMap.set(key, pointData);
                     } else if (feature.geometry.type === 'LineString') {
-                        feature.geometry.coordinates.forEach(coord => {
-                            points.push({
+                        feature.geometry.coordinates.forEach((coord, coordIndex) => {
+                            const key = `${coord[0]}_${coord[1]}`;
+                            // إذا كانت هناك بيانات محددة لهذا الإحداثي، استخدمها
+                            // وإلا استخدم properties من feature
+                            const pointData = {
                                 lat: coord[1],
-                                lng: coord[0]
-                            });
+                                lng: coord[0],
+                                time: timeValue,
+                                Time: timeValue,
+                                tripID: tripId,
+                                Trip_ID: tripId,
+                                originalData: {
+                                    Time: timeValue,
+                                    TakeOffTime: props.TakeOffTime || props.takeOffTime || '',
+                                    Altitude: props.Altitude || props.altitude || 0,
+                                    Speed: props.Speed || props.speed || 0,
+                                    Trip_ID: tripId,
+                                    ...props
+                                }
+                            };
+                            points.push(pointData);
+                            pointDataMap.set(key, pointData);
                         });
                     } else if (feature.geometry.type === 'Polygon') {
-                        feature.geometry.coordinates[0].forEach(coord => {
-                            points.push({
+                        feature.geometry.coordinates[0].forEach((coord, coordIndex) => {
+                            const key = `${coord[0]}_${coord[1]}`;
+                            const pointData = {
                                 lat: coord[1],
-                                lng: coord[0]
-                            });
+                                lng: coord[0],
+                                time: timeValue,
+                                Time: timeValue,
+                                tripID: tripId,
+                                Trip_ID: tripId,
+                                originalData: {
+                                    Time: timeValue,
+                                    TakeOffTime: props.TakeOffTime || props.takeOffTime || '',
+                                    Altitude: props.Altitude || props.altitude || 0,
+                                    Speed: props.Speed || props.speed || 0,
+                                    Trip_ID: tripId,
+                                    ...props
+                                }
+                            };
+                            points.push(pointData);
+                            pointDataMap.set(key, pointData);
                         });
                     }
                 });
             } else if (geoJsonData.type === 'Feature') {
+                const props = geoJsonData.properties || {};
+                const timeValue = props.Time || props.time || '';
+                const tripId = props.Trip_ID || props.trip_ID || '';
+                
                 if (geoJsonData.geometry.type === 'Point') {
-                    points.push({
+                    const pointData = {
                         lat: geoJsonData.geometry.coordinates[1],
-                        lng: geoJsonData.geometry.coordinates[0]
-                    });
+                        lng: geoJsonData.geometry.coordinates[0],
+                        time: timeValue,
+                        Time: timeValue,
+                        tripID: tripId,
+                        Trip_ID: tripId,
+                        originalData: {
+                            Time: timeValue,
+                            TakeOffTime: props.TakeOffTime || props.takeOffTime || '',
+                            Altitude: props.Altitude || props.altitude || 0,
+                            Speed: props.Speed || props.speed || 0,
+                            Trip_ID: tripId,
+                            ...props
+                        }
+                    };
+                    points.push(pointData);
                 }
             }
             
@@ -1497,6 +1782,16 @@
                 opacity: 0.9,
                 smoothFactor: 1.0
             }).addTo(layerGroup);
+            
+            // إضافة علامات البداية والنهاية إذا كان المسار يحتوي على نقطتين على الأقل
+            if (coordinates.length >= 2) {
+                const startCoord = coordinates[0];
+                const endCoord = coordinates[coordinates.length - 1];
+                const pathMarkers = createPathMarkers(startCoord, endCoord, layerGroup);
+                // حفظ مراجع العلامات في المسار
+                polyline.startMarker = pathMarkers.startMarker;
+                polyline.endMarker = pathMarkers.endMarker;
+            }
             
             // إضافة إمكانية تحديد المسار الكامل
             let isPathSelected = false;
@@ -1637,6 +1932,9 @@
                                     }
                                 });
                                 
+                                // تحديث علامات البداية والنهاية
+                                updatePathMarkers(polyline);
+                                
                                 // تحديث البيانات مباشرة
                                 updateLayerDataFromPolyline(layerInfo.id, polyline);
                             }
@@ -1715,6 +2013,14 @@
                     // إزالة النقاط المرتبطة به
                     if (path.editMarkers) {
                         path.editMarkers.forEach(marker => marker.remove());
+                    }
+                    
+                    // إزالة علامات البداية والنهاية
+                    if (path.startMarker) {
+                        path.startMarker.remove();
+                    }
+                    if (path.endMarker) {
+                        path.endMarker.remove();
                     }
                 });
                 
@@ -1976,6 +2282,9 @@
                     }
                 });
                 
+                // تحديث علامات البداية والنهاية
+                updatePathMarkers(polyline);
+                
                 // مسح النقاط المحددة
                 selectedMarkers.clear();
                 updateDeleteButton();
@@ -2126,61 +2435,222 @@
             }
         }
         
-        // متغير لتخزين المجلد المحدد
-        let selectedDirectoryHandle = null;
+        // متغيرات لتخزين المجلدين المحددين
+        let cleanDataFolderHandle = null;
+        let uncleanDataFolderHandle = null;
+        let currentExportFolderType = null; // 'clean' or 'unclean'
         
-        // دالة لاختيار المجلد مرة واحدة
-        async function selectDirectory() {
+        // دالة لاختيار مجلد البيانات النظيفة
+        async function selectCleanDataFolder() {
             // التحقق من دعم File System Access API
             if ('showDirectoryPicker' in window) {
                 try {
-                    selectedDirectoryHandle = await window.showDirectoryPicker();
-                    showMessage('success', 'تم اختيار المجلد بنجاح. سيتم حفظ جميع الملفات المصدرة في هذا المجلد.');
-                    updateFolderStatus(true);
+                    cleanDataFolderHandle = await window.showDirectoryPicker();
+                    showMessage('success', 'تم اختيار مجلد البيانات النظيفة بنجاح.');
+                    updateCleanFolderStatus(true);
                     return true;
                 } catch (error) {
                     if (error.name !== 'AbortError') {
                         showMessage('error', 'حدث خطأ في اختيار المجلد: ' + error.message);
                         console.error('خطأ في اختيار المجلد:', error);
-                        updateFolderStatus(false);
+                        updateCleanFolderStatus(false);
                     } else {
                         showMessage('info', 'تم إلغاء اختيار المجلد');
-                        updateFolderStatus(false);
+                        updateCleanFolderStatus(false);
                     }
                     return false;
                 }
             } else {
-                // التحقق من دعم showSaveFilePicker كبديل
-                if ('showSaveFilePicker' in window) {
-                    showMessage('info', 'يمكنك اختيار موقع الملف عند التصدير. المتصفح لا يدعم اختيار المجلد مباشرة.');
-                } else {
-                    showMessage('info', 'المتصفح لا يدعم اختيار المجلد. سيتم حفظ الملفات في مجلد التنزيل الافتراضي.');
-                }
-                updateFolderStatus(false);
+                showMessage('info', 'المتصفح لا يدعم اختيار المجلد. سيتم حفظ الملفات في مجلد التنزيل الافتراضي.');
+                updateCleanFolderStatus(false);
                 return false;
             }
         }
         
-        // دالة لتحديث حالة المجلد المحدد
-        function updateFolderStatus(isSelected) {
-            const folderStatus = document.getElementById('folderStatus');
-            const folderStatusText = document.getElementById('folderStatusText');
-            const selectFolderBtn = document.getElementById('selectFolderBtn');
+        // دالة لاختيار مجلد البيانات غير النظيفة
+        async function selectUncleanDataFolder() {
+            // التحقق من دعم File System Access API
+            if ('showDirectoryPicker' in window) {
+                try {
+                    uncleanDataFolderHandle = await window.showDirectoryPicker();
+                    showMessage('success', 'تم اختيار مجلد البيانات غير النظيفة بنجاح.');
+                    updateUncleanFolderStatus(true);
+                    return true;
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        showMessage('error', 'حدث خطأ في اختيار المجلد: ' + error.message);
+                        console.error('خطأ في اختيار المجلد:', error);
+                        updateUncleanFolderStatus(false);
+                    } else {
+                        showMessage('info', 'تم إلغاء اختيار المجلد');
+                        updateUncleanFolderStatus(false);
+                    }
+                    return false;
+                }
+            } else {
+                showMessage('info', 'المتصفح لا يدعم اختيار المجلد. سيتم حفظ الملفات في مجلد التنزيل الافتراضي.');
+                updateUncleanFolderStatus(false);
+                return false;
+            }
+        }
+        
+        // دالة لتحديث حالة مجلد البيانات النظيفة
+        function updateCleanFolderStatus(isSelected) {
+            const folderStatus = document.getElementById('cleanFolderStatus');
+            const folderStatusText = document.getElementById('cleanFolderStatusText');
+            const selectFolderBtn = document.getElementById('selectCleanFolderBtn');
             
-            if (isSelected && selectedDirectoryHandle) {
+            if (isSelected && cleanDataFolderHandle) {
                 folderStatus.style.display = 'block';
-                folderStatusText.textContent = 'تم اختيار المجلد - سيتم حفظ الملفات المصدرة هنا';
+                folderStatusText.textContent = 'تم اختيار مجلد البيانات النظيفة';
                 selectFolderBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
-                selectFolderBtn.textContent = '✓ مجلد محدد - اضغط لتغييره';
+                selectFolderBtn.textContent = '✓ مجلد البيانات النظيفة محدد - اضغط لتغييره';
             } else {
                 folderStatus.style.display = 'none';
-                selectFolderBtn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-                selectFolderBtn.textContent = '📂 اختيار مجلد التصدير';
+                selectFolderBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                selectFolderBtn.textContent = '📁 اختيار مجلد البيانات النظيفة';
             }
+        }
+        
+        // دالة لتحديث حالة مجلد البيانات غير النظيفة
+        function updateUncleanFolderStatus(isSelected) {
+            const folderStatus = document.getElementById('uncleanFolderStatus');
+            const folderStatusText = document.getElementById('uncleanFolderStatusText');
+            const selectFolderBtn = document.getElementById('selectUncleanFolderBtn');
+            
+            if (isSelected && uncleanDataFolderHandle) {
+                folderStatus.style.display = 'block';
+                folderStatusText.textContent = 'تم اختيار مجلد البيانات غير النظيفة';
+                selectFolderBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                selectFolderBtn.textContent = '✓ مجلد البيانات غير النظيفة محدد - اضغط لتغييره';
+            } else {
+                folderStatus.style.display = 'none';
+                selectFolderBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                selectFolderBtn.textContent = '📁 اختيار مجلد البيانات غير النظيفة';
+            }
+        }
+        
+        // دالة لإظهار واجهة اختيار مجلد التصدير
+        function showFolderSelectModal() {
+            const modal = document.getElementById('folderSelectModal');
+            if (!modal) {
+                console.error('الواجهة المنبثقة غير موجودة');
+                return;
+            }
+            
+            const cleanBtn = document.getElementById('modalBtnClean');
+            const uncleanBtn = document.getElementById('modalBtnUnclean');
+            
+            // إظهار/إخفاء الأزرار حسب المجلدات المحددة
+            if (cleanBtn) {
+                cleanBtn.style.display = cleanDataFolderHandle ? 'block' : 'none';
+            }
+            if (uncleanBtn) {
+                uncleanBtn.style.display = uncleanDataFolderHandle ? 'block' : 'none';
+            }
+            
+            modal.classList.add('show');
+            
+            // إضافة معالج الحدث لإغلاق الواجهة عند النقر خارجها (إذا لم يكن موجوداً)
+            if (!modal.hasAttribute('data-listener-added')) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeFolderSelectModal();
+                    }
+                });
+                modal.setAttribute('data-listener-added', 'true');
+            }
+        }
+        
+        // دالة لإخفاء واجهة اختيار مجلد التصدير
+        function closeFolderSelectModal(resetSelection = false) {
+            const modal = document.getElementById('folderSelectModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+            // إعادة تعيين الاختيار فقط إذا طُلب ذلك (عند الإلغاء)
+            if (resetSelection) {
+                currentExportFolderType = null;
+            }
+        }
+        
+        // دالة لاختيار نوع المجلد للتصدير
+        function selectExportFolder(folderType) {
+            // التحقق من أن المجلد المحدد موجود
+            if (folderType === 'clean' && !cleanDataFolderHandle) {
+                showMessage('error', 'مجلد البيانات النظيفة غير محدد');
+                return;
+            }
+            if (folderType === 'unclean' && !uncleanDataFolderHandle) {
+                showMessage('error', 'مجلد البيانات غير النظيفة غير محدد');
+                return;
+            }
+            
+            currentExportFolderType = folderType;
+            // إغلاق الواجهة دون إعادة تعيين الاختيار
+            closeFolderSelectModal(false);
+        }
+        
+        // دالة للحصول على المجلد المحدد للتصدير
+        function getSelectedExportFolder() {
+            if (currentExportFolderType === 'clean') {
+                if (!cleanDataFolderHandle) {
+                    console.error('مجلد البيانات النظيفة غير محدد');
+                    return null;
+                }
+                return cleanDataFolderHandle;
+            } else if (currentExportFolderType === 'unclean') {
+                if (!uncleanDataFolderHandle) {
+                    console.error('مجلد البيانات غير النظيفة غير محدد');
+                    return null;
+                }
+                return uncleanDataFolderHandle;
+            }
+            console.warn('لم يتم اختيار نوع المجلد');
+            return null;
+        }
+        
+        // دالة مساعدة للانتظار حتى يختار المستخدم مجلد التصدير
+        async function waitForFolderSelection() {
+            // إظهار واجهة اختيار المجلد
+            showFolderSelectModal();
+            
+            // انتظار اختيار المستخدم للمجلد
+            await new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    const modal = document.getElementById('folderSelectModal');
+                    const isModalClosed = !modal || !modal.classList.contains('show');
+                    
+                    // إذا تم اختيار مجلد أو تم إغلاق الواجهة
+                    if (currentExportFolderType !== null || isModalClosed) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+            });
+            
+            // إذا لم يختر المستخدم مجلد، ألغ العملية
+            if (currentExportFolderType === null) {
+                showMessage('info', 'تم إلغاء عملية التصدير');
+                return false;
+            }
+            
+            // التحقق من أن المجلد المحدد موجود
+            const selectedFolder = getSelectedExportFolder();
+            if (!selectedFolder) {
+                showMessage('error', 'المجلد المحدد غير متوفر');
+                currentExportFolderType = null;
+                return false;
+            }
+            
+            return true;
         }
         
         // دالة مساعدة لحفظ الملف في مجلد محدد
         async function saveFileToDirectory(fileName, content, mimeType = 'application/json') {
+            // الحصول على المجلد المحدد للتصدير
+            const selectedDirectoryHandle = getSelectedExportFolder();
+            
             // إذا كان هناك مجلد محدد مسبقاً، استخدمه
             if (selectedDirectoryHandle) {
                 try {
@@ -2203,7 +2673,7 @@
                     return true;
                 } catch (error) {
                     console.error('خطأ في حفظ الملف:', error);
-                    showMessage('error', 'حدث خطأ في حفظ الملف. سيتم استخدام طريقة التنزيل العادية.');
+                    showMessage('error', 'حدث خطأ في حفظ الملف: ' + error.message);
                     // في حالة الفشل، استخدم الطريقة القديمة
                     return saveFileFallback(fileName, content, mimeType);
                 }
@@ -2266,6 +2736,18 @@
             const layerInfo = layers.find(l => l.id === layerId);
             if (!layerInfo) {
                 showMessage('error', 'الطبقة غير موجودة');
+                return;
+            }
+            
+            // التحقق من وجود مجلدات محددة
+            if (!cleanDataFolderHandle && !uncleanDataFolderHandle) {
+                showMessage('error', 'يرجى تحديد مجلد البيانات النظيفة أو غير النظيفة أولاً');
+                return;
+            }
+            
+            // انتظار اختيار المستخدم للمجلد
+            const folderSelected = await waitForFolderSelection();
+            if (!folderSelected) {
                 return;
             }
             
@@ -2353,10 +2835,13 @@
             
             const success = await saveFileToDirectory(fileName, exportContent, mimeType);
             if (success) {
-                showMessage('success', `تم تصدير ${layerInfo.name} بنجاح`);
+                const folderName = currentExportFolderType === 'clean' ? 'مجلد البيانات النظيفة' : 'مجلد البيانات غير النظيفة';
+                showMessage('success', `تم تصدير ${layerInfo.name} بنجاح إلى ${folderName}`);
             } else {
                 showMessage('error', 'تم إلغاء عملية التصدير');
             }
+            
+            currentExportFolderType = null;
         }
         
         // دالة مساعدة لتحويل القيم المعقدة إلى قيم بسيطة متوافقة مع ArcGIS Pro
@@ -2678,6 +3163,18 @@
                 return;
             }
             
+            // التحقق من وجود مجلدات محددة
+            if (!cleanDataFolderHandle && !uncleanDataFolderHandle) {
+                showMessage('error', 'يرجى تحديد مجلد البيانات النظيفة أو غير النظيفة أولاً');
+                return;
+            }
+            
+            // انتظار اختيار المستخدم للمجلد
+            const folderSelected = await waitForFolderSelection();
+            if (!folderSelected) {
+                return;
+            }
+            
             // تحديث البيانات من المسار المعدل قبل التصدير
             if (layerInfo.polyline) {
                 updateLayerDataFromPolyline(layerId, layerInfo.polyline);
@@ -2749,10 +3246,13 @@
             
             const success = await saveFileToDirectory(fileName, jsonString, 'application/geo+json');
             if (success) {
-                showMessage('success', `تم تصدير ${layerInfo.name} إلى GeoJSON بنجاح (${geoJsonData.features.length} نقطة)`);
+                const folderName = currentExportFolderType === 'clean' ? 'مجلد البيانات النظيفة' : 'مجلد البيانات غير النظيفة';
+                showMessage('success', `تم تصدير ${layerInfo.name} إلى GeoJSON بنجاح (${geoJsonData.features.length} نقطة) في ${folderName}`);
             } else {
                 showMessage('error', 'تم إلغاء عملية التصدير');
             }
+            
+            currentExportFolderType = null;
         }
         
         // دالة لتصدير جميع البيانات إلى GeoJSON
@@ -2762,13 +3262,16 @@
                 return;
             }
             
-            // إذا لم يكن هناك مجلد محدد، اطلب اختياره
-            if (!selectedDirectoryHandle && 'showDirectoryPicker' in window) {
-                const selected = await selectDirectory();
-                if (!selected) {
-                    // إذا لم يختر المستخدم مجلد، استخدم الطريقة العادية
-                    showMessage('info', 'سيتم حفظ الملفات في مجلد التنزيل الافتراضي');
-                }
+            // التحقق من وجود مجلدات محددة
+            if (!cleanDataFolderHandle && !uncleanDataFolderHandle) {
+                showMessage('error', 'يرجى تحديد مجلد البيانات النظيفة أو غير النظيفة أولاً');
+                return;
+            }
+            
+            // انتظار اختيار المستخدم للمجلد
+            const folderSelected = await waitForFolderSelection();
+            if (!folderSelected) {
+                return;
             }
             
             // تصدير كل ملف منفصل بنفس اسم الملف المصدر
@@ -2840,10 +3343,13 @@
             }
             
             if (successCount > 0) {
-                showMessage('success', `تم تصدير ${successCount} ملف إلى GeoJSON بنجاح - جاهز للاستخدام في ArcGIS Pro`);
+                const folderName = currentExportFolderType === 'clean' ? 'مجلد البيانات النظيفة' : 'مجلد البيانات غير النظيفة';
+                showMessage('success', `تم تصدير ${successCount} ملف إلى GeoJSON بنجاح في ${folderName} - جاهز للاستخدام في ArcGIS Pro`);
             } else {
                 showMessage('error', 'فشل تصدير الملفات');
             }
+            
+            currentExportFolderType = null;
         }
         
         // دالة لتنزيل جميع الملفات بصيغة GeoJSON المطلوبة
@@ -2853,13 +3359,16 @@
                 return;
             }
             
-            // إذا لم يكن هناك مجلد محدد، اطلب اختياره
-            if (!selectedDirectoryHandle && 'showDirectoryPicker' in window) {
-                const selected = await selectDirectory();
-                if (!selected) {
-                    // إذا لم يختر المستخدم مجلد، استخدم الطريقة العادية
-                    showMessage('info', 'سيتم حفظ الملفات في مجلد التنزيل الافتراضي');
-                }
+            // التحقق من وجود مجلدات محددة
+            if (!cleanDataFolderHandle && !uncleanDataFolderHandle) {
+                showMessage('error', 'يرجى تحديد مجلد البيانات النظيفة أو غير النظيفة أولاً');
+                return;
+            }
+            
+            // انتظار اختيار المستخدم للمجلد
+            const folderSelected = await waitForFolderSelection();
+            if (!folderSelected) {
+                return;
             }
             
             // تنزيل كل ملف على حدة
@@ -2931,16 +3440,31 @@
             }
             
             if (successCount > 0) {
-                showMessage('success', `تم تنزيل ${successCount} ملف بصيغة GeoJSON بنجاح`);
+                const folderName = currentExportFolderType === 'clean' ? 'مجلد البيانات النظيفة' : 'مجلد البيانات غير النظيفة';
+                showMessage('success', `تم تنزيل ${successCount} ملف بصيغة GeoJSON بنجاح في ${folderName}`);
             } else {
                 showMessage('error', 'فشل تنزيل الملفات');
             }
+            
+            currentExportFolderType = null;
         }
         
         // دالة لتصدير جميع البيانات إلى JSON
         async function exportToJSON() {
             if (layers.length === 0) {
                 showMessage('error', 'لا توجد بيانات للتصدير');
+                return;
+            }
+            
+            // التحقق من وجود مجلدات محددة
+            if (!cleanDataFolderHandle && !uncleanDataFolderHandle) {
+                showMessage('error', 'يرجى تحديد مجلد البيانات النظيفة أو غير النظيفة أولاً');
+                return;
+            }
+            
+            // انتظار اختيار المستخدم للمجلد
+            const folderSelected = await waitForFolderSelection();
+            if (!folderSelected) {
                 return;
             }
             
@@ -2960,10 +3484,13 @@
             
             const success = await saveFileToDirectory(fileName, jsonString, 'application/json');
             if (success) {
-                showMessage('success', 'تم تصدير جميع البيانات بنجاح');
+                const folderName = currentExportFolderType === 'clean' ? 'مجلد البيانات النظيفة' : 'مجلد البيانات غير النظيفة';
+                showMessage('success', `تم تصدير جميع البيانات بنجاح إلى ${folderName}`);
             } else {
                 showMessage('error', 'تم إلغاء عملية التصدير');
             }
+            
+            currentExportFolderType = null;
         }
         
         // دالة لحذف طبقة واحدة
@@ -3178,46 +3705,232 @@
                         
                         // البحث عن الطبقة التي في وضع التعديل
                         let activeEditLayer = null;
+                        let activePolyline = null;
+                        let allEditMarkers = [];
+                        let activeSelectedMarkers = null;
+                        
+                        console.log('عدد الطبقات:', layers.length);
                         for (let i = 0; i < layers.length; i++) {
                             const layerInfo = layers[i];
-                            if (layerInfo.polyline && layerInfo.polyline.isEditMode) {
-                                activeEditLayer = layerInfo;
-                                break;
+                            
+                            // التحقق من الطبقات العادية (polyline مباشر)
+                            if (layerInfo.polyline) {
+                                const hasPolyline = !!layerInfo.polyline;
+                                const isEditMode = layerInfo.polyline.isEditMode === true;
+                                const hasEditMarkers = layerInfo.polyline.editMarkers && layerInfo.polyline.editMarkers.length > 0;
+                                
+                                console.log(`الطبقة ${i} (عادية):`, {
+                                    name: layerInfo.name,
+                                    hasPolyline: hasPolyline,
+                                    isEditMode: isEditMode,
+                                    hasEditMarkers: hasEditMarkers,
+                                    editMarkersCount: layerInfo.polyline.editMarkers ? layerInfo.polyline.editMarkers.length : 0
+                                });
+                                
+                                if (layerInfo.visible && (isEditMode || hasEditMarkers)) {
+                                    activeEditLayer = layerInfo;
+                                    activePolyline = layerInfo.polyline;
+                                    allEditMarkers = layerInfo.polyline.editMarkers || [];
+                                    activeSelectedMarkers = layerInfo.polyline.selectedMarkers;
+                                    console.log('تم العثور على طبقة عادية في وضع التعديل:', activeEditLayer.name);
+                                    break;
+                                }
+                            }
+                            
+                            // التحقق من طبقات GeoJSON (layerGroup.polylines)
+                            if (layerInfo.isGeoJson && layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                                const polylines = layerInfo.layerGroup.polylines;
+                                console.log(`الطبقة ${i} (GeoJSON):`, {
+                                    name: layerInfo.name,
+                                    isVisible: layerInfo.visible,
+                                    polylinesCount: polylines.length
+                                });
+                                
+                                if (layerInfo.visible && polylines.length > 0) {
+                                    // البحث عن polyline في وضع التعديل أو به editMarkers
+                                    for (let j = 0; j < polylines.length; j++) {
+                                        const polyline = polylines[j];
+                                        const isEditMode = polyline.isEditMode === true;
+                                        const hasEditMarkers = polyline.editMarkers && polyline.editMarkers.length > 0;
+                                        
+                                        if (isEditMode || hasEditMarkers) {
+                                            activeEditLayer = layerInfo;
+                                            activePolyline = polyline;
+                                            allEditMarkers = polyline.editMarkers || [];
+                                            activeSelectedMarkers = polyline.selectedMarkers;
+                                            console.log(`تم العثور على polyline ${j} في طبقة GeoJSON في وضع التعديل:`, activeEditLayer.name);
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // إذا لم نجد polyline في وضع التعديل، نأخذ الأول الظاهر
+                                    if (!activeEditLayer && polylines.length > 0) {
+                                        const firstPolyline = polylines[0];
+                                        if (firstPolyline.editMarkers && firstPolyline.editMarkers.length > 0) {
+                                            activeEditLayer = layerInfo;
+                                            activePolyline = firstPolyline;
+                                            allEditMarkers = firstPolyline.editMarkers || [];
+                                            activeSelectedMarkers = firstPolyline.selectedMarkers;
+                                            console.log('تم العثور على polyline أول في طبقة GeoJSON:', activeEditLayer.name);
+                                        }
+                                    }
+                                    
+                                    if (activeEditLayer) break;
+                                }
+                            }
+                        }
+                        
+                        // إذا لم نجد طبقة في وضع التعديل، نبحث عن أي طبقة ظاهرة
+                        if (!activeEditLayer) {
+                            console.log('لم يتم العثور على طبقة في وضع التعديل، البحث عن أي طبقة ظاهرة...');
+                            for (let i = 0; i < layers.length; i++) {
+                                const layerInfo = layers[i];
+                                if (!layerInfo.visible) continue;
+                                
+                                if (layerInfo.polyline && layerInfo.polyline.editMarkers && layerInfo.polyline.editMarkers.length > 0) {
+                                    activeEditLayer = layerInfo;
+                                    activePolyline = layerInfo.polyline;
+                                    allEditMarkers = layerInfo.polyline.editMarkers || [];
+                                    activeSelectedMarkers = layerInfo.polyline.selectedMarkers;
+                                    console.log('تم العثور على طبقة ظاهرة عادية:', activeEditLayer.name);
+                                    break;
+                                } else if (layerInfo.isGeoJson && layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                                    const polylines = layerInfo.layerGroup.polylines;
+                                    for (let j = 0; j < polylines.length; j++) {
+                                        const polyline = polylines[j];
+                                        if (polyline.editMarkers && polyline.editMarkers.length > 0) {
+                                            activeEditLayer = layerInfo;
+                                            activePolyline = polyline;
+                                            allEditMarkers = polyline.editMarkers || [];
+                                            activeSelectedMarkers = polyline.selectedMarkers;
+                                            console.log('تم العثور على طبقة GeoJSON ظاهرة:', activeEditLayer.name);
+                                            break;
+                                        }
+                                    }
+                                    if (activeEditLayer) break;
+                                }
                             }
                         }
                         
                         // إذا كانت هناك طبقة في وضع التعديل، حدد النقاط داخل الشكل المرسوم
-                        if (activeEditLayer && activeEditLayer.polyline) {
-                            const polyline = activeEditLayer.polyline;
-                            const editMarkers = polyline.editMarkers || [];
-                            const selectedMarkers = polyline.selectedMarkers;
+                        if (activeEditLayer && activePolyline) {
+                            console.log('معالجة طبقة في وضع التعديل:', activeEditLayer.name);
                             
-                            if (editMarkers && editMarkers.length > 0 && selectedMarkers) {
+                            // إنشاء selectedMarkers إذا لم تكن موجودة
+                            if (!activeSelectedMarkers) {
+                                activePolyline.selectedMarkers = new Set();
+                                activeSelectedMarkers = activePolyline.selectedMarkers;
+                                console.log('تم إنشاء selectedMarkers جديدة');
+                            }
+                            
+                            console.log('عدد editMarkers:', allEditMarkers.length);
+                            console.log('selectedMarkers موجود:', !!activeSelectedMarkers);
+                            console.log('نوع selectedMarkers:', activeSelectedMarkers ? activeSelectedMarkers.constructor.name : 'null');
+                            
+                            if (allEditMarkers && allEditMarkers.length > 0 && activeSelectedMarkers) {
+                                console.log('بدء عملية تحديد النقاط داخل الشكل');
                                 let selectedCount = 0;
                                 
                                 if (layer instanceof L.Polygon) {
                                     // للمضلع: تحديد النقاط التي تقع داخل المضلع
                                     const polygonBounds = layer.getLatLngs();
-                                    const flatLatlngs = Array.isArray(polygonBounds[0]) ? polygonBounds[0] : polygonBounds;
+                                    console.log('إحداثيات المضلع الخام:', polygonBounds);
                                     
-                                    // دالة للتحقق من أن النقطة داخل المضلع (خوارزمية ray casting)
+                                    // استخراج الإحداثيات بشكل صحيح
+                                    let flatLatlngs;
+                                    if (Array.isArray(polygonBounds[0])) {
+                                        flatLatlngs = polygonBounds[0];
+                                    } else if (polygonBounds[0] instanceof L.LatLng) {
+                                        flatLatlngs = polygonBounds;
+                                    } else {
+                                        flatLatlngs = polygonBounds;
+                                    }
+                                    
+                                    // التأكد من أن الإحداثيات في الصيغة الصحيحة
+                                    const polygonPoints = flatLatlngs.map(ll => {
+                                        if (ll instanceof L.LatLng) {
+                                            return { lat: ll.lat, lng: ll.lng };
+                                        } else if (Array.isArray(ll)) {
+                                            return { lat: ll[0] || ll.lat, lng: ll[1] || ll.lng };
+                                        } else {
+                                            return { lat: ll.lat, lng: ll.lng };
+                                        }
+                                    });
+                                    
+                                    console.log('نقاط المضلع المعالجة:', polygonPoints);
+                                    console.log('عدد النقاط في المضلع:', polygonPoints.length);
+                                    
+                                    // دالة للتحقق من أن النقطة داخل المضلع (خوارزمية ray casting محسنة)
                                     function isPointInPolygon(point, polygon) {
+                                        if (!polygon || polygon.length < 3) {
+                                            console.log('المضلع غير صالح:', polygon);
+                                            return false;
+                                        }
+                                        
+                                        const x = point.lng;
+                                        const y = point.lat;
                                         let inside = false;
+                                        
                                         for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-                                            const xi = polygon[i].lng, yi = polygon[i].lat;
-                                            const xj = polygon[j].lng, yj = polygon[j].lat;
-                                            const intersect = ((yi > point.lat) !== (yj > point.lat)) &&
-                                                (point.lng < (xj - xi) * (point.lat - yi) / (yj - yi) + xi);
+                                            const xi = polygon[i].lng;
+                                            const yi = polygon[i].lat;
+                                            const xj = polygon[j].lng;
+                                            const yj = polygon[j].lat;
+                                            
+                                            // التحقق من أن yi !== yj لتجنب القسمة على صفر
+                                            if (yi === yj) continue;
+                                            
+                                            // خوارزمية ray casting
+                                            const intersect = ((yi > y) !== (yj > y)) && 
+                                                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                                             if (intersect) inside = !inside;
                                         }
+                                        
                                         return inside;
                                     }
                                     
-                                    editMarkers.forEach(marker => {
+                                    // استخدام Leaflet's contains method كبديل
+                                    function isPointInPolygonLeaflet(point, polygonLayer) {
+                                        try {
+                                            const bounds = polygonLayer.getBounds();
+                                            if (!bounds.contains([point.lat, point.lng])) {
+                                                return false;
+                                            }
+                                            // استخدام خوارزمية ray casting للتحقق الدقيق
+                                            return isPointInPolygon(point, polygonPoints);
+                                        } catch (e) {
+                                            console.error('خطأ في isPointInPolygonLeaflet:', e);
+                                            return isPointInPolygon(point, polygonPoints);
+                                        }
+                                    }
+                                    
+                                    console.log('عدد العلامات للفحص:', allEditMarkers.length);
+                                    
+                                    // استخدام Leaflet bounds للتحقق السريع أولاً
+                                    const polygonBoundsBox = layer.getBounds();
+                                    console.log('حدود المضلع:', polygonBoundsBox);
+                                    
+                                    allEditMarkers.forEach((marker, index) => {
                                         const markerLatLng = marker.getLatLng();
-                                        // التحقق من أن النقطة داخل المضلع
-                                        if (isPointInPolygon(markerLatLng, flatLatlngs) && !selectedMarkers.has(marker)) {
-                                            selectedMarkers.add(marker);
+                                        const point = {
+                                            lat: markerLatLng.lat,
+                                            lng: markerLatLng.lng
+                                        };
+                                        
+                                        // التحقق السريع باستخدام bounds
+                                        if (!polygonBoundsBox.contains([point.lat, point.lng])) {
+                                            return; // النقطة خارج الحدود، تخطي
+                                        }
+                                        
+                                        // التحقق الدقيق باستخدام خوارزمية ray casting
+                                        const isInside = isPointInPolygon(point, polygonPoints);
+                                        
+                                        if (index < 5) { // طباعة أول 5 نقاط فقط لتجنب الفوضى
+                                            console.log(`النقطة ${index} (${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}) داخل المضلع:`, isInside);
+                                        }
+                                        
+                                        if (isInside && !activeSelectedMarkers.has(marker)) {
+                                            activeSelectedMarkers.add(marker);
                                             marker.setStyle({
                                                 fillColor: '#00ff00',
                                                 color: '#000000',
@@ -3226,6 +3939,7 @@
                                             selectedCount++;
                                         }
                                     });
+                                    console.log('عدد النقاط المحددة:', selectedCount);
                                 } else if (layer instanceof L.Polyline) {
                                     // للخط: تحديد النقاط القريبة من الخط (في نطاق 50 متر)
                                     const polylineLatLngs = layer.getLatLngs();
@@ -3271,7 +3985,7 @@
                                         return distanceInMeters(point.lat, point.lng, closestLat, closestLng);
                                     }
                                     
-                                    editMarkers.forEach(marker => {
+                                    allEditMarkers.forEach(marker => {
                                         const markerLatLng = marker.getLatLng();
                                         let minDistance = Infinity;
                                         
@@ -3286,8 +4000,8 @@
                                         }
                                         
                                         // إذا كانت المسافة أقل من 50 متر
-                                        if (minDistance <= 50 && !selectedMarkers.has(marker)) {
-                                            selectedMarkers.add(marker);
+                                        if (minDistance <= 50 && !activeSelectedMarkers.has(marker)) {
+                                            activeSelectedMarkers.add(marker);
                                             marker.setStyle({
                                                 fillColor: '#00ff00',
                                                 color: '#000000',
@@ -3299,8 +4013,18 @@
                                 }
                                 
                                 // تحديث زر الحذف
-                                if (polyline.updateDeleteButton) {
-                                    polyline.updateDeleteButton();
+                                if (activePolyline.updateDeleteButton) {
+                                    activePolyline.updateDeleteButton();
+                                } else {
+                                    // محاولة تحديث زر الحذف يدوياً
+                                    const countElements = document.querySelectorAll('.selected-count');
+                                    countElements.forEach(el => {
+                                        el.textContent = activeSelectedMarkers.size;
+                                    });
+                                    const countElement = document.getElementById('selected-count');
+                                    if (countElement) {
+                                        countElement.textContent = activeSelectedMarkers.size;
+                                    }
                                 }
                                 
                                 if (selectedCount > 0) {
@@ -3678,7 +4402,2042 @@
                 loadFiles();
             }
         }, false);
+        
+        // دالة لحساب المسافة بين نقطتين باستخدام صيغة Haversine
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // نصف قطر الأرض بالكيلومترات
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // المسافة بالكيلومترات
+        }
+        
+        // دالة لتنسيق التاريخ والوقت
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return 'غير محدد';
+            try {
+                const date = new Date(dateTimeString);
+                if (isNaN(date.getTime())) return dateTimeString;
+                return date.toLocaleString('ar-SA', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } catch (e) {
+                return dateTimeString;
+            }
+        }
+        
+        // دالة لتحويل الوقت من التنسيق الأصلي إلى ISO format
+        function convertTimeToISO(timeString, dateString = null) {
+            if (!timeString || typeof timeString !== 'string') return null;
+            
+            const trimmed = timeString.trim();
+            if (!trimmed) return null;
+            
+            // إذا كان التنسيق ISO بالفعل
+            if (trimmed.includes('T') || trimmed.match(/^\d{4}-\d{2}-\d{2}/)) {
+                const date = new Date(trimmed);
+                if (!isNaN(date.getTime())) return trimmed; // إرجاع ISO string
+            }
+            
+            try {
+                // إذا كان الوقت يحتوي على "_" فهو تنسيق مخصص
+                if (trimmed.includes("_")) {
+                    // الحصول على التاريخ من dateString
+                    let dateStr = dateString || '';
+                    
+                    // إذا لم يكن هناك تاريخ، نحاول استخراجه من التنسيق نفسه أو نستخدم تاريخ افتراضي
+                    if (!dateStr || dateStr.trim() === '') {
+                        // محاولة استخراج التاريخ من التنسيق إذا كان يحتوي على تاريخ
+                        // تنسيق مثل "2025_11_27_12_04_53.144"
+                        const dateMatch = trimmed.match(/^(\d{4})[_-](\d{1,2})[_-](\d{1,2})/);
+                        if (dateMatch) {
+                            dateStr = `${dateMatch[1]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[3].padStart(2, '0')}`;
+                            // إزالة جزء التاريخ من الوقت
+                            timeString = trimmed.replace(/^\d{4}[_-]\d{1,2}[_-]\d{1,2}[_-]/, '');
+                        } else {
+                            // استخدام تاريخ اليوم كافتراضي
+                            const today = new Date();
+                            dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                        }
+                    } else {
+                        // تحويل "2025_11_27" إلى "2025-11-27"
+                        dateStr = dateStr.replace(/_/g, "-");
+                    }
+                    
+                    // تحويل الوقت - تنسيقات مختلفة محتملة
+                    let timeParts = trimmed;
+                    
+                    // إذا كان الوقت يحتوي على نقطة وشرطة سفلية، قد يكون تنسيق معكوس
+                    // مثل "49.480_13_22" (ثانية.ميللي_ساعة_دقيقة) أو "12_04_53.144" (ساعة_دقيقة_ثانية.ميللي)
+                    if (timeParts.includes(".") && timeParts.includes("_")) {
+                        const parts = timeParts.split("_");
+                        const firstPart = parts[0];
+                        
+                        // إذا كان الجزء الأول يحتوي على نقطة، قد يكون تنسيق معكوس
+                        if (firstPart.includes(".")) {
+                            // تنسيق "SS.mmm_HH_MM" -> نحتاج إعادة ترتيبه
+                            // لكن هذا نادر، سنحاول التنسيق المعتاد أولاً
+                            timeParts = trimmed.replace(/_/g, ":");
+                        } else {
+                            // التنسيق المعتاد "HH_MM_SS.mmm"
+                            timeParts = trimmed.replace(/_/g, ":");
+                        }
+                    } else {
+                        // تحويل "12_04_53.144" إلى "12:04:53.144"
+                        timeParts = trimmed.replace(/_/g, ":");
+                    }
+                    
+                    // التأكد من وجود الميلي ثانية
+                    if (!timeParts.includes(".")) {
+                        timeParts += ".000";
+                    }
+                    
+                    const isoString = `${dateStr}T${timeParts}+03:00`;
+                    const date = new Date(isoString);
+                    if (!isNaN(date.getTime())) {
+                        return isoString;
+                    }
+                }
+                
+                // محاولة التحويل المباشر
+                const date = new Date(trimmed);
+                if (!isNaN(date.getTime())) {
+                    return trimmed;
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('convertTimeToISO: خطأ في التحويل', e, { timeString, dateString });
+                return null;
+            }
+        }
+        
+        // دالة لتحويل تنسيقات الوقت المختلفة إلى Date object
+        function parseTimeToISO(timeString) {
+            if (!timeString || typeof timeString !== 'string') return null;
+            
+            const trimmed = timeString.trim();
+            if (!trimmed) return null;
+            
+            // إذا كان التنسيق ISO بالفعل
+            if (trimmed.includes('T') || trimmed.match(/^\d{4}-\d{2}-\d{2}/)) {
+                const date = new Date(trimmed);
+                if (!isNaN(date.getTime())) return date;
+            }
+            
+            // محاولة التحويل المباشر
+            try {
+                const date = new Date(trimmed);
+                if (!isNaN(date.getTime())) return date;
+            } catch (e) {
+                // تجاهل الخطأ
+            }
+            
+            return null;
+        }
+        
+        // دالة لحساب المدة بين تاريخين
+        function calculateDuration(startTime, endTime) {
+            // التحقق من وجود القيم وعدم كونها فارغة
+            if (!startTime || !endTime || 
+                (typeof startTime === 'string' && startTime.trim() === '') ||
+                (typeof endTime === 'string' && endTime.trim() === '')) {
+                console.log('calculateDuration: قيم فارغة', { startTime, endTime });
+                return 'غير محدد';
+            }
+            try {
+                // محاولة تحويل الأوقات إلى Date objects
+                let start = parseTimeToISO(startTime);
+                let end = parseTimeToISO(endTime);
+                
+                // إذا فشل التحويل، جرب Date مباشرة
+                if (!start) {
+                    start = new Date(startTime);
+                }
+                if (!end) {
+                    end = new Date(endTime);
+                }
+                
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                    console.log('calculateDuration: تواريخ غير صحيحة', { startTime, endTime, start: start.getTime(), end: end.getTime() });
+                    return 'غير محدد';
+                }
+                
+                const diffMs = end - start;
+                if (diffMs < 0) {
+                    console.log('calculateDuration: تاريخ النهاية قبل تاريخ البداية', { startTime, endTime });
+                    return 'غير محدد';
+                }
+                
+                const diffSeconds = Math.floor(diffMs / 1000);
+                const diffMinutes = Math.floor(diffSeconds / 60);
+                const diffHours = Math.floor(diffMinutes / 60);
+                const diffDays = Math.floor(diffHours / 24);
+                
+                if (diffDays > 0) {
+                    return `${diffDays} يوم و ${diffHours % 24} ساعة و ${diffMinutes % 60} دقيقة`;
+                } else if (diffHours > 0) {
+                    return `${diffHours} ساعة و ${diffMinutes % 60} دقيقة`;
+                } else if (diffMinutes > 0) {
+                    return `${diffMinutes} دقيقة و ${diffSeconds % 60} ثانية`;
+                } else {
+                    return `${diffSeconds} ثانية`;
+                }
+            } catch (e) {
+                console.error('calculateDuration: خطأ في الحساب', e, { startTime, endTime });
+                return 'غير محدد';
+            }
+        }
+        
+        // دالة لجمع بيانات المسارات المرئية (محسّنة)
+        function collectVisibleRoutes(includeHidden = false) {
+            const routes = [];
+            
+            console.log('collectVisibleRoutes: بدء جمع المسارات, includeHidden:', includeHidden);
+            console.log('collectVisibleRoutes: عدد الطبقات:', layers.length);
+            
+            layers.forEach((layerInfo, layerIndex) => {
+                // إذا كان includeHidden = false، نتجاهل الطبقات المخفية
+                if (!includeHidden && (!layerInfo.visible || !layerInfo.data || layerInfo.data.length === 0)) {
+                    console.log(`collectVisibleRoutes: تخطي الطبقة ${layerIndex} (مخفية أو فارغة)`);
+                    return;
+                }
+                // إذا كان includeHidden = true، نأخذ جميع الطبقات حتى المخفية
+                if (includeHidden && (!layerInfo.data || layerInfo.data.length === 0)) {
+                    console.log(`collectVisibleRoutes: تخطي الطبقة ${layerIndex} (فارغة)`);
+                    return;
+                }
+                
+                console.log(`collectVisibleRoutes: معالجة الطبقة ${layerIndex}: ${layerInfo.name}, عدد النقاط: ${layerInfo.data.length}`);
+                
+                // تصفية النقاط التي تحتوي على إحداثيات صحيحة
+                const validPoints = layerInfo.data.filter(point => {
+                    const lat = point.lat;
+                    const lng = point.lng;
+                    const isValid = lat !== undefined && lat !== null && 
+                                   lng !== undefined && lng !== null &&
+                                   !isNaN(lat) && !isNaN(lng) &&
+                                   lat >= -90 && lat <= 90 &&
+                                   lng >= -180 && lng <= 180;
+                    return isValid;
+                });
+                
+                if (validPoints.length === 0) {
+                    console.log(`collectVisibleRoutes: لا توجد نقاط صحيحة في الطبقة ${layerIndex}`);
+                    return;
+                }
+                
+                console.log(`collectVisibleRoutes: عدد النقاط الصحيحة: ${validPoints.length}`);
+                
+                // تجميع النقاط حسب Trip_ID
+                const routesByTrip = {};
+                
+                validPoints.forEach((point, index) => {
+                    // محاولة استخراج Trip_ID من مصادر متعددة
+                    let tripId = point.tripID || point.Trip_ID || point.trip_id || 
+                                point.originalData?.Trip_ID || point.originalData?.trip_ID || 
+                                point.originalData?.tripID || '';
+                    
+                    // إذا لم يكن هناك Trip_ID، استخدم اسم الملف
+                    if (!tripId || tripId === '' || tripId === 'unknown') {
+                        tripId = layerInfo.name || `route_${layerIndex}`;
+                    }
+                    
+                    if (!routesByTrip[tripId]) {
+                        routesByTrip[tripId] = [];
+                    }
+                    routesByTrip[tripId].push(point);
+                });
+                
+                console.log(`collectVisibleRoutes: عدد المسارات المميزة: ${Object.keys(routesByTrip).length}`);
+                
+                // إذا لم يكن هناك Trip_IDs مميزة، أنشئ مسار واحد من جميع النقاط
+                const tripKeys = Object.keys(routesByTrip);
+                if (tripKeys.length === 0 || 
+                    (tripKeys.length === 1 && (tripKeys[0].includes('unknown') || tripKeys[0] === layerInfo.name))) {
+                    // إنشاء مسار واحد من جميع النقاط
+                    if (validPoints.length >= 2) {
+                        const points = [...validPoints];
+                        
+                        // ترتيب النقاط حسب الوقت أو الفهرس
+                        points.sort((a, b) => {
+                            const timeA = a.time || a.Time || a.originalData?.Time || '';
+                            const timeB = b.time || b.Time || b.originalData?.Time || '';
+                            if (timeA && timeB) {
+                                return timeA.localeCompare(timeB);
+                            }
+                            // إذا لم يكن هناك وقت، استخدم الفهرس
+                            const indexA = validPoints.indexOf(a);
+                            const indexB = validPoints.indexOf(b);
+                            return indexA - indexB;
+                        });
+                        
+                        console.log(`collectVisibleRoutes: إنشاء مسار واحد من ${points.length} نقطة`);
+                        
+                        const startPoint = points[0];
+                        const endPoint = points[points.length - 1];
+                        
+                        // حساب المسافة الإجمالية
+                        let totalDistance = 0;
+                        for (let i = 0; i < points.length - 1; i++) {
+                            if (points[i].lat && points[i].lng && points[i + 1].lat && points[i + 1].lng) {
+                                totalDistance += calculateDistance(
+                                    points[i].lat,
+                                    points[i].lng,
+                                    points[i + 1].lat,
+                                    points[i + 1].lng
+                                );
+                            }
+                        }
+                        
+                        // استخراج الوقت والتاريخ
+                        const startTimeRaw = startPoint.time || startPoint.Time || startPoint.originalData?.Time || 
+                                           startPoint.takeOffTime || startPoint.TakeOffTime || 
+                                           startPoint.originalData?.TakeOffTime || '';
+                        const endTimeRaw = endPoint.time || endPoint.Time || endPoint.originalData?.Time || '';
+                        const startDate = startPoint.date || startPoint.originalData?.current_Date || startPoint.originalData?.current_date || '';
+                        const endDate = endPoint.date || endPoint.originalData?.current_Date || endPoint.originalData?.current_date || '';
+                        
+                        // تحويل الأوقات إلى ISO format
+                        const startTime = convertTimeToISO(startTimeRaw, startDate) || startTimeRaw;
+                        const endTime = convertTimeToISO(endTimeRaw, endDate) || endTimeRaw;
+                        
+                        // الحصول على نوع المطار
+                        let airportType = 'غير محدد';
+                        if (startPoint.airport?.NickName) {
+                            airportType = startPoint.airport.NickName;
+                        } else if (startPoint.Airport?.NickName) {
+                            airportType = startPoint.Airport.NickName;
+                        } else if (startPoint.originalData?.Airport?.NickName) {
+                            airportType = startPoint.originalData.Airport.NickName;
+                        } else if (startPoint.planeType || startPoint.PlaneType || startPoint.originalData?.PlaneType) {
+                            airportType = `نوع ${startPoint.planeType || startPoint.PlaneType || startPoint.originalData?.PlaneType}`;
+                        }
+                        
+                        routes.push({
+                            name: layerInfo.name || 'مسار غير معروف',
+                            tripId: layerInfo.name || 'unknown',
+                            airportType: airportType,
+                            startLat: startPoint.lat,
+                            startLng: startPoint.lng,
+                            endLat: endPoint.lat,
+                            endLng: endPoint.lng,
+                            startTime: startTime,
+                            endTime: endTime,
+                            duration: calculateDuration(startTime, endTime),
+                            distance: totalDistance.toFixed(2) + ' كم',
+                            pointCount: points.length
+                        });
+                    }
+                } else {
+                    // إنشاء مسار لكل Trip_ID
+                    Object.keys(routesByTrip).forEach(tripId => {
+                        const points = routesByTrip[tripId];
+                        if (points.length < 2) return; // نحتاج نقطتين على الأقل
+                        
+                        // ترتيب النقاط حسب الوقت
+                        points.sort((a, b) => {
+                            const timeA = a.time || a.Time || a.originalData?.Time || '';
+                            const timeB = b.time || b.Time || b.originalData?.Time || '';
+                            if (!timeA && !timeB) return 0;
+                            if (!timeA) return 1;
+                            if (!timeB) return -1;
+                            return timeA.localeCompare(timeB);
+                        });
+                        
+                        const startPoint = points[0];
+                        const endPoint = points[points.length - 1];
+                        
+                        // حساب المسافة الإجمالية
+                        let totalDistance = 0;
+                        for (let i = 0; i < points.length - 1; i++) {
+                            if (points[i].lat && points[i].lng && points[i + 1].lat && points[i + 1].lng) {
+                                totalDistance += calculateDistance(
+                                    points[i].lat,
+                                    points[i].lng,
+                                    points[i + 1].lat,
+                                    points[i + 1].lng
+                                );
+                            }
+                        }
+                        
+                        // استخراج الوقت والتاريخ
+                        const startTimeRaw = startPoint.time || startPoint.Time || startPoint.originalData?.Time || 
+                                           startPoint.takeOffTime || startPoint.TakeOffTime || 
+                                           startPoint.originalData?.TakeOffTime || '';
+                        const endTimeRaw = endPoint.time || endPoint.Time || endPoint.originalData?.Time || '';
+                        const startDate = startPoint.date || startPoint.originalData?.current_Date || startPoint.originalData?.current_date || '';
+                        const endDate = endPoint.date || endPoint.originalData?.current_Date || endPoint.originalData?.current_date || '';
+                        
+                        // تحويل الأوقات إلى ISO format
+                        const startTime = convertTimeToISO(startTimeRaw, startDate) || startTimeRaw;
+                        const endTime = convertTimeToISO(endTimeRaw, endDate) || endTimeRaw;
+                        
+                        // الحصول على نوع المطار
+                        let airportType = 'غير محدد';
+                        if (startPoint.airport?.NickName) {
+                            airportType = startPoint.airport.NickName;
+                        } else if (startPoint.Airport?.NickName) {
+                            airportType = startPoint.Airport.NickName;
+                        } else if (startPoint.originalData?.Airport?.NickName) {
+                            airportType = startPoint.originalData.Airport.NickName;
+                        } else if (startPoint.planeType || startPoint.PlaneType || startPoint.originalData?.PlaneType) {
+                            airportType = `نوع ${startPoint.planeType || startPoint.PlaneType || startPoint.originalData?.PlaneType}`;
+                        }
+                        
+                        routes.push({
+                            name: layerInfo.name || 'مسار غير معروف',
+                            tripId: tripId,
+                            airportType: airportType,
+                            startLat: startPoint.lat,
+                            startLng: startPoint.lng,
+                            endLat: endPoint.lat,
+                            endLng: endPoint.lng,
+                            startTime: startTime,
+                            endTime: endTime,
+                            duration: calculateDuration(startTime, endTime),
+                            distance: totalDistance.toFixed(2) + ' كم',
+                            pointCount: points.length
+                        });
+                        
+                        console.log(`collectVisibleRoutes: تم إضافة مسار ${tripId} مع ${points.length} نقطة`);
+                    });
+                }
+            });
+            
+            console.log(`collectVisibleRoutes: إجمالي المسارات المجمعة: ${routes.length}`);
+            return routes;
+        }
+        
+        // دالة للحصول على مقياس الرسم الحالي
+        function getCurrentScale() {
+            const zoom = map.getZoom();
+            const center = map.getCenter();
+            const bounds = map.getBounds();
+            const ne = bounds.getNorthEast();
+            const sw = bounds.getSouthWest();
+            
+            // حساب المسافة بين النقاط القطرية
+            const distance = calculateDistance(sw.lat, sw.lng, ne.lat, ne.lng);
+            
+            // تقدير مقياس الرسم التقريبي
+            const scale = `1:${Math.round(distance * 1000)}`;
+            return scale;
+        }
+        
+        // دالة لإنشاء التقرير (محسّنة)
+        async function generateReport() {
+            // التحقق من وجود طبقات محملة
+            if (layers.length === 0) {
+                showMessage('error', 'لا توجد مسارات محملة. يرجى تحميل الملفات أولاً.');
+                return;
+            }
+            
+            // التحقق من وجود مسارات مرئية أو مخفية
+            const visibleLayers = layers.filter(l => l.visible);
+            const hiddenLayers = layers.filter(l => !l.visible);
+            
+            let includeHidden = false;
+            if (visibleLayers.length === 0 && hiddenLayers.length > 0) {
+                const confirmInclude = confirm('لا توجد مسارات مرئية، لكن يوجد ' + hiddenLayers.length + ' مسار مخفي.\nهل تريد تضمين المسارات المخفية في التقرير؟');
+                if (!confirmInclude) {
+                    showMessage('info', 'تم إلغاء إنشاء التقرير');
+                    return;
+                }
+                includeHidden = true;
+            } else if (visibleLayers.length === 0) {
+                showMessage('error', 'لا توجد مسارات محملة. يرجى تحميل الملفات أولاً.');
+                return;
+            }
+            
+            // طلب معلومات التقرير
+            const reportTitle = prompt('أدخل عنوان التقرير:', 'تقرير المسارات');
+            if (!reportTitle) return;
+            
+            const dateFrom = prompt('أدخل التاريخ من (مثال: 2025-01-01) - اتركه فارغاً لتجاهله:', '');
+            const dateTo = prompt('أدخل التاريخ إلى (مثال: 2025-12-31) - اتركه فارغاً لتجاهله:', '');
+            
+            const secretTitle = prompt('أدخل العنوان السري (مثال: سري للغاية):', 'سري للغاية');
+            if (!secretTitle) return;
+            
+            const operationsText = prompt('أدخل نص العمليات:', 'عمليات');
+            if (!operationsText) return;
+            
+            showMessage('info', 'جاري إنشاء التقرير...');
+            
+            try {
+                // جمع بيانات المسارات (شامل للمخفي إذا طُلب)
+                const routes = collectVisibleRoutes(includeHidden);
+                
+                if (routes.length === 0) {
+                    showMessage('error', 'لا توجد بيانات مسارات متاحة. تأكد من أن الملفات المحملة تحتوي على إحداثيات صحيحة.');
+                    return;
+                }
+                
+                showMessage('info', `تم العثور على ${routes.length} مسار. جاري إنشاء التقرير...`);
+                
+                // إنشاء PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 15;
+                
+                // دالة محسّنة لكتابة النص العربي بجودة عالية
+                function addArabicText(text, x, y, options = {}) {
+                    if (!text || String(text).trim() === '') return;
+                    
+                    try {
+                        const fontSize = doc.internal.getFontSize();
+                        // استخدام DPI عالي (300 DPI) لجودة أفضل
+                        const dpi = 300;
+                        const scale = dpi / 96; // عامل التحجيم
+                        const fontSizePx = Math.max(fontSize * (dpi / 25.4), 10); // تحويل من mm إلى px عند 300 DPI
+                        
+                        // الحصول على نمط الخط الحالي
+                        let fontStyle = 'normal';
+                        let fontWeight = 'normal';
+                        try {
+                            const fontInfo = doc.internal.getFont();
+                            if (fontInfo && fontInfo.fontName) {
+                                if (fontInfo.fontName.includes('bold') || fontInfo.fontStyle === 'bold') {
+                                    fontWeight = 'bold';
+                                }
+                                if (fontInfo.fontStyle === 'italic') {
+                                    fontStyle = 'italic';
+                                }
+                            }
+                        } catch (e) {
+                            // استخدام القيم الافتراضية
+                        }
+                        
+                        // إنشاء canvas عالي الدقة
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // استخدام خطوط أفضل للعربية
+                        const arabicFont = `${fontWeight} ${fontStyle} ${fontSizePx}px 'Segoe UI', 'Arial Unicode MS', 'Tahoma', 'Arabic Typesetting', sans-serif`;
+                        
+                        // حساب العرض المطلوب للنص
+                        ctx.font = arabicFont;
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'top';
+                        
+                        // قياس النص أولاً
+                        const metrics = ctx.measureText(String(text));
+                        const textWidthPx = metrics.width;
+                        const textHeightPx = fontSizePx * 1.2;
+                        
+                        // تحديد حجم canvas عالي الدقة
+                        const padding = 15 * scale;
+                        canvas.width = Math.max((textWidthPx + padding * 2) * scale, 200);
+                        canvas.height = Math.max((textHeightPx + padding * 2) * scale, (textHeightPx + 4) * scale);
+                        
+                        // تطبيق التحجيم للجودة العالية
+                        ctx.scale(scale, scale);
+                        
+                        // إعداد الخلفية الشفافة
+                        ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
+                        
+                        // الحصول على لون النص
+                        let textColor = '#000000';
+                        try {
+                            const currentColor = doc.getTextColor();
+                            if (currentColor && Array.isArray(currentColor) && currentColor.length >= 3) {
+                                textColor = `rgb(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]})`;
+                            }
+                        } catch (e) {
+                            // استخدام اللون الافتراضي
+                        }
+                        
+                        // إعادة إعداد الخط بعد التحجيم
+                        ctx.font = arabicFont;
+                        ctx.fillStyle = textColor;
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'top';
+                        
+                        // تحسين جودة النص بشكل كبير
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        
+                        // رسم النص
+                        ctx.fillText(String(text), (canvas.width / scale) - padding, padding);
+                        
+                        // تحويل إلى صورة بجودة عالية
+                        const imgData = canvas.toDataURL('image/png', 1.0);
+                        
+                        // تحويل الأبعاد من px إلى mm (مع الأخذ بالاعتبار التحجيم)
+                        const mmToPx = 3.779527559; // 1mm = 3.78px عند 96 DPI
+                        const imgWidthMm = (textWidthPx / scale) / mmToPx;
+                        const imgHeightMm = (textHeightPx / scale) / mmToPx;
+                        
+                        // حساب الموضع النهائي
+                        let finalX = x;
+                        let finalY = y - imgHeightMm * 0.05;
+                        
+                        if (options.align === 'center') {
+                            finalX = (pageWidth - imgWidthMm) / 2;
+                        } else if (options.align === 'right') {
+                            finalX = pageWidth - margin - imgWidthMm;
+                        }
+                        
+                        // إضافة الصورة إلى PDF بجودة عالية
+                        doc.addImage(imgData, 'PNG', finalX, finalY, imgWidthMm, imgHeightMm, undefined, 'FAST');
+                        
+                    } catch (e) {
+                        console.warn('خطأ في رسم النص العربي:', e);
+                        // طريقة احتياطية: استخدام النص مباشرة
+                        try {
+                            let finalX = x;
+                            if (options.align === 'center') {
+                                const textStr = String(text);
+                                const estimatedWidth = textStr.length * doc.internal.getFontSize() * 0.5;
+                                finalX = (pageWidth - estimatedWidth) / 2;
+                            }
+                            doc.text(String(text), finalX, y, options);
+                        } catch (e2) {
+                            doc.text(String(text), x, y);
+                        }
+                    }
+                }
+                
+                // الصفحة الأولى: عنوان التقرير والخريطة
+                // إضافة خلفية للعنوان
+                doc.setFillColor(240, 240, 240);
+                doc.rect(0, 0, pageWidth, 20, 'F');
+                
+                // العنوان في المنتصف (حجم أصغر)
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0, 0, 0);
+                addArabicText(reportTitle, pageWidth / 2, 12, { align: 'center' });
+                
+                // خط فاصل تحت العنوان
+                doc.setDrawColor(100, 100, 100);
+                doc.setLineWidth(0.3);
+                doc.line(margin, 22, pageWidth - margin, 22);
+                
+                // التاريخ من - إلى (حجم أصغر)
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                const dateText = dateFrom && dateTo ? `من ${dateFrom} إلى ${dateTo}` : (dateFrom || dateTo || '');
+                if (dateText) {
+                    addArabicText(dateText, pageWidth / 2, 26, { align: 'center' });
+                }
+                
+                // العنوان السري على اليسار (حجم أصغر)
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(200, 0, 0); // أحمر داكن
+                addArabicText(secretTitle, margin, 30);
+                
+                // خط تحت العنوان السري
+                doc.setDrawColor(200, 0, 0);
+                doc.setLineWidth(0.3);
+                doc.line(margin, 32.5, margin + 35, 32.5);
+                
+                // نص العمليات (حجم أصغر)
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0); // أسود
+                addArabicText(operationsText, margin, 36);
+                
+                // التقاط الخريطة مع الـ basemap
+                const mapElement = document.getElementById('map');
+                if (mapElement && typeof html2canvas !== 'undefined') {
+                    showMessage('info', 'جاري التقاط صورة الخريطة مع الخلفية...');
+                    
+                    // إخفاء عناصر التحكم المؤقتة قبل التقاط الصورة (لكن نبقي البوصلة)
+                    const controls = document.querySelectorAll('.leaflet-control-container > *');
+                    const originalDisplay = [];
+                    controls.forEach((control, index) => {
+                        originalDisplay[index] = control.style.display;
+                        // إخفاء جميع عناصر التحكم ما عدا البوصلة
+                        const isCompass = control.querySelector && control.querySelector('.compass-control');
+                        if (!isCompass) {
+                            control.style.display = 'none';
+                        }
+                    });
+                    
+                    // إجبار إعادة رسم الخريطة لضمان تحميل جميع الـ tiles
+                    map.invalidateSize();
+                    
+                    // التأكد من أن جميع الطبقات المرئية ظاهرة
+                    layers.forEach(layerInfo => {
+                        if (layerInfo.visible && layerInfo.layerGroup) {
+                            if (!map.hasLayer(layerInfo.layerGroup)) {
+                                layerInfo.layerGroup.addTo(map);
+                            }
+                        }
+                    });
+                    
+                    // التأكد من تحميل جميع الـ tiles
+                    const tileLayers = [];
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.TileLayer) {
+                            tileLayers.push(layer);
+                            // إجبار إعادة تحميل الـ tiles
+                            layer.redraw();
+                            // التأكد من أن الـ tiles مرئية
+                            const container = layer.getContainer();
+                            if (container) {
+                                container.style.opacity = '1';
+                                container.style.visibility = 'visible';
+                                container.style.display = 'block';
+                            }
+                        }
+                    });
+                    
+                    // الانتظار لضمان تحميل جميع الـ tiles والطبقات
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // التحقق من تحميل الـ tiles
+                    const checkTiles = () => {
+                        const tiles = document.querySelectorAll('#map img.leaflet-tile');
+                        const loadedTiles = Array.from(tiles).filter(img => img.complete && img.naturalWidth > 0);
+                        return loadedTiles.length;
+                    };
+                    
+                    // الانتظار حتى يتم تحميل معظم الـ tiles
+                    let attempts = 0;
+                    while (attempts < 10 && checkTiles() < 4) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        attempts++;
+                    }
+                    
+                    // الانتظار إضافي لضمان اكتمال التحميل
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const canvas = await html2canvas(mapElement, {
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        scale: 2, // زيادة الدقة
+                        allowTaint: true,
+                        foreignObjectRendering: true,
+                        removeContainer: false,
+                        width: mapElement.offsetWidth,
+                        height: mapElement.offsetHeight,
+                        imageTimeout: 15000, // زيادة وقت الانتظار للصور
+                        onclone: (clonedDoc) => {
+                            // التأكد من أن جميع الطبقات مرئية في النسخة المستنسخة
+                            const clonedMap = clonedDoc.getElementById('map');
+                            if (clonedMap) {
+                                // إظهار جميع الطبقات المرئية بما في ذلك الـ tile layers
+                                const clonedLayers = clonedMap.querySelectorAll('.leaflet-layer');
+                                clonedLayers.forEach(layer => {
+                                    layer.style.display = 'block';
+                                    layer.style.opacity = '1';
+                                    layer.style.visibility = 'visible';
+                                    layer.style.pointerEvents = 'none';
+                                });
+                                
+                                // إظهار جميع الـ tiles مع معالجة خاصة
+                                const tiles = clonedMap.querySelectorAll('img.leaflet-tile');
+                                tiles.forEach(tile => {
+                                    tile.style.display = 'block';
+                                    tile.style.opacity = '1';
+                                    tile.style.visibility = 'visible';
+                                    tile.style.pointerEvents = 'none';
+                                    // التأكد من أن الصورة محملة
+                                    if (tile.complete && tile.naturalWidth > 0) {
+                                        tile.style.opacity = '1';
+                                    }
+                                });
+                                
+                                // إظهار جميع الـ tile containers
+                                const tileContainers = clonedMap.querySelectorAll('.leaflet-tile-container');
+                                tileContainers.forEach(container => {
+                                    container.style.display = 'block';
+                                    container.style.opacity = '1';
+                                    container.style.visibility = 'visible';
+                                });
+                                
+                                // إظهار جميع المسارات والخطوط
+                                const polylines = clonedMap.querySelectorAll('.leaflet-interactive');
+                                polylines.forEach(polyline => {
+                                    polyline.style.display = 'block';
+                                    polyline.style.opacity = '1';
+                                    polyline.style.visibility = 'visible';
+                                });
+                                
+                                // إظهار العلامات
+                                const markers = clonedMap.querySelectorAll('.leaflet-marker-icon');
+                                markers.forEach(marker => {
+                                    marker.style.display = 'block';
+                                    marker.style.opacity = '1';
+                                    marker.style.visibility = 'visible';
+                                });
+                                
+                                // إزالة أي عناصر تحكم متبقية
+                                const controls = clonedMap.querySelectorAll('.leaflet-control');
+                                controls.forEach(control => {
+                                    if (!control.querySelector('.compass-control')) {
+                                        control.style.display = 'none';
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    
+                    // إعادة عرض عناصر التحكم
+                    controls.forEach((control, index) => {
+                        control.style.display = originalDisplay[index] || '';
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = pageWidth - (margin * 2);
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // التأكد من أن الصورة لا تتجاوز الصفحة
+                    const startY = 42; // موضع بداية الخريطة (أصغر بسبب تقليل حجم النصوص)
+                    const maxHeight = pageHeight - startY - 20; // ترك مساحة للأسفل
+                    const finalHeight = imgHeight > maxHeight ? maxHeight : imgHeight;
+                    const finalWidth = (canvas.width * finalHeight) / canvas.height;
+                    
+                    // إضافة إطار للخريطة
+                    doc.setDrawColor(150, 150, 150);
+                    doc.setLineWidth(0.3);
+                    doc.rect(margin - 1, startY - 1, finalWidth + 2, finalHeight + 2);
+                    
+                    doc.addImage(imgData, 'PNG', margin, startY, finalWidth, finalHeight, undefined, 'FAST');
+                    
+                    // إضافة مقياس الرسم في أسفل الصورة
+                    const scale = getCurrentScale();
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(80, 80, 80);
+                    const scaleText = `مقياس الرسم: ${scale}`;
+                    addArabicText(scaleText, margin, startY + finalHeight + 4);
+                } else {
+                    doc.setFontSize(12);
+                    doc.text('تعذر التقاط الخريطة', margin, 100);
+                }
+                
+                // الصفحة الثانية: معلومات المسارات
+                doc.addPage();
+                
+                // عنوان الصفحة الثانية مع خلفية
+                doc.setFillColor(240, 240, 240);
+                doc.rect(0, 0, pageWidth, 18, 'F');
+                
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0, 0, 0);
+                const routesTitle = 'معلومات المسارات';
+                addArabicText(routesTitle, pageWidth / 2, 11, { align: 'center' });
+                
+                // خط فاصل
+                doc.setDrawColor(100, 100, 100);
+                doc.setLineWidth(0.3);
+                doc.line(margin, 18, pageWidth - margin, 18);
+                
+                let yPos = 24;
+                const tableMargin = 5;
+                const cellPadding = 3;
+                
+                // إنشاء جدول منفصل لكل مسار
+                routes.forEach((route, routeIndex) => {
+                    // التحقق من المساحة المتاحة
+                    if (yPos > pageHeight - 50) {
+                        doc.addPage();
+                        // إعادة العنوان في الصفحة الجديدة
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(0, 0, pageWidth, 18, 'F');
+                        doc.setFontSize(14);
+                        doc.setFont('helvetica', 'bold');
+                        addArabicText(routesTitle, pageWidth / 2, 11, { align: 'center' });
+                        doc.setDrawColor(100, 100, 100);
+                        doc.setLineWidth(0.3);
+                        doc.line(margin, 18, pageWidth - margin, 18);
+                        yPos = 24;
+                    }
+                    
+                    // عنوان المسار مع تصميم أفضل (حجم أصغر)
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFillColor(70, 130, 180); // لون أزرق جميل
+                    doc.rect(margin, yPos - 5, pageWidth - (margin * 2), 7, 'F');
+                    // إضافة إطار للعنوان
+                    doc.setDrawColor(50, 100, 150);
+                    doc.setLineWidth(0.2);
+                    doc.rect(margin, yPos - 5, pageWidth - (margin * 2), 7);
+                    doc.setTextColor(255, 255, 255);
+                    const routeTitle = `المسار ${routeIndex + 1}: ${route.name}`;
+                    addArabicText(routeTitle, margin + 2, yPos - 1);
+                    doc.setTextColor(0, 0, 0);
+                    yPos += 9;
+                    
+                    // بيانات المسار في جدول (حجم أصغر)
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    const tableData = [
+                        ['اسم المسار:', route.name],
+                        ['نوع المطار:', String(route.airportType)],
+                        ['إحداثيات نقطة البداية:', `${route.startLat.toFixed(6)}, ${route.startLng.toFixed(6)}`],
+                        ['إحداثيات نقطة النهاية:', `${route.endLat.toFixed(6)}, ${route.endLng.toFixed(6)}`],
+                        ['تاريخ البداية:', formatDateTime(route.startTime)],
+                        ['تاريخ النهاية:', formatDateTime(route.endTime)],
+                        ['المدة:', route.duration],
+                        ['المسافة:', route.distance]
+                    ];
+                    
+                    tableData.forEach((row, rowIndex) => {
+                        // التحقق من المساحة
+                        if (yPos > pageHeight - 20) {
+                            doc.addPage();
+                            // إعادة العنوان في الصفحة الجديدة
+                            doc.setFillColor(240, 240, 240);
+                            doc.rect(0, 0, pageWidth, 18, 'F');
+                            doc.setFontSize(14);
+                            doc.setFont('helvetica', 'bold');
+                            addArabicText(routesTitle, pageWidth / 2, 11, { align: 'center' });
+                            doc.setDrawColor(100, 100, 100);
+                            doc.setLineWidth(0.3);
+                            doc.line(margin, 18, pageWidth - margin, 18);
+                            yPos = 24;
+                        }
+                        
+                        // خلفية متناوبة مع إطار
+                        if (rowIndex % 2 === 0) {
+                            doc.setFillColor(250, 250, 250);
+                            doc.rect(margin, yPos - 6, pageWidth - (margin * 2), 8, 'F');
+                        }
+                        
+                        // إطار خفيف للصف
+                        doc.setDrawColor(220, 220, 220);
+                        doc.setLineWidth(0.2);
+                        doc.rect(margin, yPos - 6, pageWidth - (margin * 2), 8);
+                        
+                        // العمود الأول (التسمية) - حجم أصغر
+                        doc.setFontSize(8);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(60, 60, 60);
+                        addArabicText(row[0], margin + cellPadding, yPos - 2);
+                        
+                        // العمود الثاني (القيمة) - حجم أصغر
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(0, 0, 0);
+                        const valueX = margin + 60; // مسافة مناسبة
+                        const maxWidth = pageWidth - margin - valueX - cellPadding;
+                        
+                        // تقسيم النص إذا كان طويلاً
+                        let textLines = [];
+                        try {
+                            // محاولة استخدام splitTextToSize إذا كان متاحاً
+                            if (typeof doc.splitTextToSize === 'function') {
+                                textLines = doc.splitTextToSize(String(row[1]), maxWidth);
+                            } else {
+                                // طريقة بديلة: تقسيم يدوي
+                                const maxChars = Math.floor(maxWidth / 2); // تقدير تقريبي
+                                const text = String(row[1]);
+                                if (text.length > maxChars) {
+                                    for (let i = 0; i < text.length; i += maxChars) {
+                                        textLines.push(text.substring(i, i + maxChars));
+                                    }
+                                } else {
+                                    textLines = [text];
+                                }
+                            }
+                        } catch (e) {
+                            // في حالة الخطأ، استخدم النص كما هو
+                            textLines = [String(row[1]).substring(0, 80)]; // حد أقصى 80 حرف
+                        }
+                        
+                        textLines.forEach((line, lineIndex) => {
+                            if (lineIndex > 0) yPos += 6;
+                            addArabicText(line, valueX, yPos - 2);
+                        });
+                        
+                        yPos += Math.max(9, textLines.length * 6);
+                    });
+                    
+                    // مسافة بين الجداول
+                    yPos += 8;
+                    
+                    // خط فاصل محسّن
+                    doc.setDrawColor(180, 180, 180);
+                    doc.setLineWidth(0.5);
+                    doc.setLineDashPattern([3, 2], 0);
+                    doc.line(margin, yPos, pageWidth - margin, yPos);
+                    doc.setLineDashPattern([], 0); // إعادة تعيين
+                    yPos += 10;
+                });
+                
+                // حفظ الملف
+                const fileName = `تقرير_${reportTitle.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+                doc.save(fileName);
+                
+                showMessage('success', 'تم إنشاء التقرير بنجاح!');
+            } catch (error) {
+                console.error('خطأ في إنشاء التقرير:', error);
+                showMessage('error', 'حدث خطأ أثناء إنشاء التقرير: ' + error.message);
+            }
+        }
+        
+        // دالة لإنشاء تقرير HTML تفاعلي
+        function generateHTMLReport() {
+            console.log('generateHTMLReport: بدء إنشاء التقرير');
+            
+            // التحقق من وجود طبقات محملة
+            if (layers.length === 0) {
+                console.log('generateHTMLReport: لا توجد طبقات محملة');
+                showMessage('error', 'لا توجد مسارات محملة. يرجى تحميل الملفات أولاً.');
+                return;
+            }
+            
+            console.log(`generateHTMLReport: عدد الطبقات: ${layers.length}`);
+            layers.forEach((layer, index) => {
+                console.log(`  الطبقة ${index}: ${layer.name}, مرئية: ${layer.visible}, عدد النقاط: ${layer.data ? layer.data.length : 0}`);
+            });
+            
+            // جمع بيانات المسارات (شامل للمخفي)
+            const routes = collectVisibleRoutes(true);
+            
+            console.log(`generateHTMLReport: عدد المسارات المجمعة: ${routes.length}`);
+            
+            if (routes.length === 0) {
+                console.log('generateHTMLReport: لا توجد مسارات متاحة');
+                console.log('generateHTMLReport: تفاصيل الطبقات:');
+                layers.forEach((layer, index) => {
+                    console.log(`  الطبقة ${index}:`, {
+                        name: layer.name,
+                        visible: layer.visible,
+                        dataLength: layer.data ? layer.data.length : 0,
+                        hasValidPoints: layer.data ? layer.data.some(p => p.lat && p.lng) : false
+                    });
+                });
+                showMessage('error', 'لا توجد بيانات مسارات متاحة. تأكد من أن الملفات المحملة تحتوي على إحداثيات صحيحة. تحقق من Console للمزيد من التفاصيل.');
+                return;
+            }
+            
+            // طلب العنوان من المستخدم
+            const reportTitle = prompt('أدخل عنوان التقرير:', 'تقرير المسارات');
+            if (reportTitle === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            // طلب التاريخ من وإلى
+            const dateFrom = prompt('أدخل التاريخ من (مثال: 2025-01-01):', '');
+            if (dateFrom === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            const dateTo = prompt('أدخل التاريخ إلى (مثال: 2025-01-31):', '');
+            if (dateTo === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            showMessage('info', `جاري إنشاء تقرير HTML تفاعلي من ${routes.length} مسار...`);
+            
+            try {
+                // إنشاء بيانات JavaScript للمسارات
+                const routesData = [];
+                let earliestDate = null;
+                let latestDate = null;
+                
+                routes.forEach((route, index) => {
+                    // الحصول على جميع النقاط للمسار من الطبقات مع بياناتها الكاملة
+                    const routePoints = [];
+                    const routePointsData = []; // لحفظ بيانات النقاط الكاملة
+                    layers.forEach(layerInfo => {
+                        if (!layerInfo.data || layerInfo.data.length === 0) return;
+                        
+                        layerInfo.data.forEach(point => {
+                            const tripId = point.tripID || point.Trip_ID || point.originalData?.Trip_ID || 
+                                         point.trip_id || point.originalData?.trip_ID || '';
+                            
+                            // إذا تطابق Trip_ID أو كان نفس اسم الملف
+                            if (tripId === route.tripId || 
+                                (!tripId && layerInfo.name === route.name) ||
+                                (tripId === 'unknown' && layerInfo.name === route.name)) {
+                                routePoints.push([point.lat, point.lng]);
+                                routePointsData.push(point); // حفظ بيانات النقطة الكاملة
+                            }
+                        });
+                    });
+                    
+                    // إذا لم نجد نقاط، استخدم نقاط البداية والنهاية فقط
+                    if (routePoints.length === 0) {
+                        routePoints.push([route.startLat, route.startLng]);
+                        routePoints.push([route.endLat, route.endLng]);
+                    }
+                    
+                    // استخراج زمن البداية والنهاية من النقاط الفعلية
+                    let actualStartTime = route.startTime || '';
+                    let actualEndTime = route.endTime || '';
+                    
+                    if (routePointsData.length > 0) {
+                        // ترتيب النقاط حسب الوقت - فلترة النقاط التي لديها وقت
+                        const sortedPoints = [...routePointsData].filter(p => {
+                            const time = p.time || p.Time || p.originalData?.Time || 
+                                       p.takeOffTime || p.TakeOffTime || p.originalData?.TakeOffTime || '';
+                            return time && time.trim() !== '';
+                        }).sort((a, b) => {
+                            const timeA = a.time || a.Time || a.originalData?.Time || 
+                                        a.takeOffTime || a.TakeOffTime || a.originalData?.TakeOffTime || '';
+                            const timeB = b.time || b.Time || b.originalData?.Time || 
+                                        b.takeOffTime || b.TakeOffTime || b.originalData?.TakeOffTime || '';
+                            if (!timeA && !timeB) return 0;
+                            if (!timeA) return 1;
+                            if (!timeB) return -1;
+                            const dateA = new Date(timeA);
+                            const dateB = new Date(timeB);
+                            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                            return dateA - dateB;
+                        });
+                        
+                        if (sortedPoints.length > 0) {
+                            const firstPoint = sortedPoints[0];
+                            const lastPoint = sortedPoints[sortedPoints.length - 1];
+                            
+                            actualStartTime = firstPoint.time || firstPoint.Time || firstPoint.originalData?.Time || 
+                                            firstPoint.takeOffTime || firstPoint.TakeOffTime || 
+                                            firstPoint.originalData?.TakeOffTime || route.startTime || '';
+                            actualEndTime = lastPoint.time || lastPoint.Time || lastPoint.originalData?.Time || 
+                                          route.endTime || '';
+                        }
+                    }
+                    
+                    // إذا لم نجد أزمنة من النقاط، استخدم الأزمنة من route
+                    if ((!actualStartTime || actualStartTime.trim() === '') && route.startTime) {
+                        actualStartTime = route.startTime;
+                    }
+                    if ((!actualEndTime || actualEndTime.trim() === '') && route.endTime) {
+                        actualEndTime = route.endTime;
+                    }
+                    
+                    // حساب أقدم وأحدث تاريخ
+                    if (actualStartTime) {
+                        const startDate = new Date(actualStartTime);
+                        if (!isNaN(startDate.getTime())) {
+                            if (!earliestDate || startDate < earliestDate) {
+                                earliestDate = startDate;
+                            }
+                        }
+                    }
+                    if (actualEndTime) {
+                        const endDate = new Date(actualEndTime);
+                        if (!isNaN(endDate.getTime())) {
+                            if (!latestDate || endDate > latestDate) {
+                                latestDate = endDate;
+                            }
+                        }
+                    }
+                    
+                    // حساب المدة من زمن البداية وزمن النهاية الفعليين
+                    const calculatedDuration = calculateDuration(actualStartTime, actualEndTime);
+                    
+                    routesData.push({
+                        id: route.tripId || `route_${index + 1}`,
+                        name: route.name || `مسار ${index + 1}`,
+                        start: [route.startLat, route.startLng],
+                        end: [route.endLat, route.endLng],
+                        points: routePoints,
+                        start_time: actualStartTime,
+                        end_time: actualEndTime,
+                        duration: calculatedDuration,
+                        distance: route.distance || '0 كم',
+                        pointCount: route.pointCount || routePoints.length
+                    });
+                });
+                
+                // تنسيق نطاق التاريخ
+                const formatDate = (dateString) => {
+                    if (!dateString || dateString.trim() === '') return 'غير محدد';
+                    try {
+                        const date = new Date(dateString);
+                        if (isNaN(date.getTime())) return dateString; // إرجاع النص كما هو إذا فشل التحويل
+                        return date.toLocaleDateString('ar-SA', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    } catch (e) {
+                        return dateString; // إرجاع النص كما هو في حالة الخطأ
+                    }
+                };
+                
+                const dateRange = (dateFrom && dateTo && dateFrom.trim() !== '' && dateTo.trim() !== '')
+                    ? `من ${formatDate(dateFrom)} إلى ${formatDate(dateTo)}`
+                    : (earliestDate && latestDate 
+                        ? `من ${formatDate(earliestDate.toISOString())} إلى ${formatDate(latestDate.toISOString())}`
+                        : 'غير محدد');
+                
+                // إنشاء محتوى HTML
+                const reportDate = new Date().toLocaleString('ar-SA');
+                const routesJson = JSON.stringify(routesData);
+                
+                // استخدام string concatenation لتجنب مشاكل template literal
+                const htmlContent = '<!DOCTYPE html>\n' +
+'<html lang="ar" dir="rtl">\n' +
+'<head>\n' +
+'    <meta charset="UTF-8">\n' +
+'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'    <title>تقرير المسارات المحسّن</title>\n' +
+'    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />\n' +
+'    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></' + 'script>\n' +
+'    <style>\n' +
+'        * {\n' +
+'            margin: 0;\n' +
+'            padding: 0;\n' +
+'            box-sizing: border-box;\n' +
+'            font-family: \'Traditional Arabic\', \'Arial\', sans-serif;\n' +
+'        }\n' +
+'        \n' +
+'        body {\n' +
+'            font-family: \'Traditional Arabic\', \'Arial\', sans-serif;\n' +
+'            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n' +
+'            padding: 20px;\n' +
+'            min-height: 100vh;\n' +
+'        }\n' +
+'        \n' +
+'        .container {\n' +
+'            max-width: 1400px;\n' +
+'            margin: 0 auto;\n' +
+'            background: white;\n' +
+'            border-radius: 15px;\n' +
+'            box-shadow: 0 10px 40px rgba(0,0,0,0.2);\n' +
+'            overflow: hidden;\n' +
+'        }\n' +
+'        \n' +
+'        .header {\n' +
+'            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n' +
+'            color: white;\n' +
+'            padding: 30px;\n' +
+'            position: relative;\n' +
+'        }\n' +
+'        \n' +
+'        .header-top {\n' +
+'            position: absolute;\n' +
+'            left: 30px;\n' +
+'            top: 30px;\n' +
+'            text-align: left;\n' +
+'        }\n' +
+'        \n' +
+'        .secret-label {\n' +
+'            color: #ff0000;\n' +
+'            font-weight: bold;\n' +
+'            font-size: 2.5em;\n' +
+'            text-decoration: underline;\n' +
+'            text-decoration-thickness: 3px;\n' +
+'            text-underline-offset: 8px;\n' +
+'            margin-bottom: 15px;\n' +
+'            font-family: \'Traditional Arabic\', \'Arial\', sans-serif;\n' +
+'            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);\n' +
+'            letter-spacing: 2px;\n' +
+'            line-height: 1.4;\n' +
+'        }\n' +
+'        \n' +
+'        .operations-label {\n' +
+'            color: white;\n' +
+'            font-size: 2em;\n' +
+'            margin-top: 10px;\n' +
+'            font-family: \'Traditional Arabic\', \'Arial\', sans-serif;\n' +
+'            font-weight: 600;\n' +
+'            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);\n' +
+'            letter-spacing: 1px;\n' +
+'            line-height: 1.4;\n' +
+'        }\n' +
+'        \n' +
+'        .header-center {\n' +
+'            text-align: center;\n' +
+'            margin: 0 auto;\n' +
+'        }\n' +
+'        \n' +
+'        .header h1 {\n' +
+'            font-size: 2.5em;\n' +
+'            margin-bottom: 10px;\n' +
+'            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);\n' +
+'            font-family: \'Traditional Arabic\', \'Arial\', sans-serif;\n' +
+'        }\n' +
+'        \n' +
+'        .header p {\n' +
+'            font-size: 1.1em;\n' +
+'            opacity: 0.9;\n' +
+'        }\n' +
+'        \n' +
+'        .date-range {\n' +
+'            font-size: 1.2em;\n' +
+'            margin-top: 10px;\n' +
+'            font-weight: 500;\n' +
+'        }\n' +
+'        \n' +
+'        .content {\n' +
+'            padding: 30px;\n' +
+'        }\n' +
+'        \n' +
+'        .section {\n' +
+'            margin-bottom: 40px;\n' +
+'        }\n' +
+'        \n' +
+'        .section-title {\n' +
+'            font-size: 1.8em;\n' +
+'            color: #333;\n' +
+'            margin-bottom: 20px;\n' +
+'            padding-bottom: 10px;\n' +
+'            border-bottom: 3px solid #667eea;\n' +
+'        }\n' +
+'        \n' +
+'        .table-container {\n' +
+'            overflow-x: auto;\n' +
+'            margin-bottom: 30px;\n' +
+'            border-radius: 10px;\n' +
+'            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n' +
+'        }\n' +
+'        \n' +
+'        table {\n' +
+'            width: 100%;\n' +
+'            border-collapse: collapse;\n' +
+'            background: white;\n' +
+'        }\n' +
+'        \n' +
+'        thead {\n' +
+'            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n' +
+'            color: white;\n' +
+'        }\n' +
+'        \n' +
+'        th {\n' +
+'            padding: 15px;\n' +
+'            text-align: right;\n' +
+'            font-weight: 600;\n' +
+'            font-size: 1.1em;\n' +
+'        }\n' +
+'        \n' +
+'        td {\n' +
+'            padding: 12px 15px;\n' +
+'            border-bottom: 1px solid #eee;\n' +
+'        }\n' +
+'        \n' +
+'        tbody tr {\n' +
+'            transition: background 0.3s;\n' +
+'        }\n' +
+'        \n' +
+'        tbody tr:hover {\n' +
+'            background: #f5f5f5;\n' +
+'        }\n' +
+'        \n' +
+'        tbody tr:nth-child(even) {\n' +
+'            background: #fafafa;\n' +
+'        }\n' +
+'        \n' +
+'        .map-container {\n' +
+'            height: 600px;\n' +
+'            border-radius: 10px;\n' +
+'            overflow: hidden;\n' +
+'            box-shadow: 0 4px 15px rgba(0,0,0,0.2);\n' +
+'            margin-top: 20px;\n' +
+'        }\n' +
+'        \n' +
+'        #map {\n' +
+'            width: 100%;\n' +
+'            height: 100%;\n' +
+'        }\n' +
+'        \n' +
+'        .route-badge {\n' +
+'            display: inline-block;\n' +
+'            padding: 5px 12px;\n' +
+'            background: #667eea;\n' +
+'            color: white;\n' +
+'            border-radius: 20px;\n' +
+'            font-size: 0.9em;\n' +
+'            margin: 2px;\n' +
+'        }\n' +
+'        \n' +
+'        .coords {\n' +
+'            font-family: \'Courier New\', monospace;\n' +
+'            font-size: 0.9em;\n' +
+'            color: #666;\n' +
+'        }\n' +
+'        \n' +
+'        .compass-control {\n' +
+'            background: white;\n' +
+'            border: 2px solid rgba(0,0,0,0.2);\n' +
+'            border-radius: 50%;\n' +
+'            width: 60px;\n' +
+'            height: 60px;\n' +
+'            display: flex;\n' +
+'            align-items: center;\n' +
+'            justify-content: center;\n' +
+'            box-shadow: 0 2px 5px rgba(0,0,0,0.3);\n' +
+'            cursor: pointer;\n' +
+'        }\n' +
+'        \n' +
+'        .compass-arrow {\n' +
+'            width: 0;\n' +
+'            height: 0;\n' +
+'            border-left: 8px solid transparent;\n' +
+'            border-right: 8px solid transparent;\n' +
+'            border-bottom: 20px solid #ff0000;\n' +
+'            position: relative;\n' +
+'        }\n' +
+'        \n' +
+'        .compass-arrow::after {\n' +
+'            content: \'N\';\n' +
+'            position: absolute;\n' +
+'            top: -25px;\n' +
+'            left: -6px;\n' +
+'            color: #ff0000;\n' +
+'            font-weight: bold;\n' +
+'            font-size: 14px;\n' +
+'        }\n' +
+'        \n' +
+'        @media print {\n' +
+'            body {\n' +
+'                background: white;\n' +
+'                padding: 0;\n' +
+'            }\n' +
+'            \n' +
+'            .container {\n' +
+'                box-shadow: none;\n' +
+'            }\n' +
+'            \n' +
+'            .map-container {\n' +
+'                height: 500px;\n' +
+'            }\n' +
+'        }\n' +
+'    </style>\n' +
+'</head>\n' +
+'<body>\n' +
+'    <div class="container">\n' +
+'        <div class="header">\n' +
+'            <div class="header-top">\n' +
+'                <div class="secret-label">سري للغاية</div>\n' +
+'                <div class="operations-label">عمليات</div>\n' +
+'            </div>\n' +
+'            <div class="header-center">\n' +
+'                <h1>' + reportTitle + '</h1>\n' +
+'                <div class="date-range">' + dateRange + '</div>\n' +
+'            </div>\n' +
+'        </div>\n' +
+'        \n' +
+'        <div class="content">\n' +
+'            <div class="section">\n' +
+'                <h2 class="section-title">📊 جدول المسارات</h2>\n' +
+'                <div class="table-container">\n' +
+'                    <table>\n' +
+'                        <thead>\n' +
+'                            <tr>\n' +
+'                                <th>#</th>\n' +
+'                                <th>معرّف المسار</th>\n' +
+'                                <th>إحداثيات البداية</th>\n' +
+'                                <th>إحداثيات النهاية</th>\n' +
+'                                <th>وقت البداية</th>\n' +
+'                                <th>وقت النهاية</th>\n' +
+'                                <th>المدة</th>\n' +
+'                                <th>المسافة</th>\n' +
+'                                <th>عدد النقاط</th>\n' +
+'                            </tr>\n' +
+'                        </thead>\n' +
+'                        <tbody id="routesTable">\n' +
+'                        </tbody>\n' +
+'                    </table>\n' +
+'                </div>\n' +
+'            </div>\n' +
+'            \n' +
+'            <div class="section">\n' +
+'                <h2 class="section-title">🗺️ الخريطة التفاعلية</h2>\n' +
+'                <div class="map-container">\n' +
+'                    <div id="map"></div>\n' +
+'                </div>\n' +
+'            </div>\n' +
+'        </div>\n' +
+'    </div>\n' +
+'    \n' +
+'    <' + 'script>\n' +
+'        const routes = ' + routesJson + ';\n' +
+'        \n' +
+'        // ملء الجدول\n' +
+'        const tableBody = document.getElementById(\'routesTable\');\n' +
+'        routes.forEach((route, index) => {\n' +
+'            const row = document.createElement(\'tr\');\n' +
+'            row.innerHTML = \'<td>\' + (index + 1) + \'</td>\' +\n' +
+'                \'<td><span class="route-badge">\' + route.id + \'</span></td>\' +\n' +
+'                \'<td class="coords">\' + route.start[0].toFixed(6) + \', \' + route.start[1].toFixed(6) + \'</td>\' +\n' +
+'                \'<td class="coords">\' + route.end[0].toFixed(6) + \', \' + route.end[1].toFixed(6) + \'</td>\' +\n' +
+'                \'<td>\' + (route.start_time || \'غير محدد\') + \'</td>\' +\n' +
+'                \'<td>\' + (route.end_time || \'غير محدد\') + \'</td>\' +\n' +
+'                \'<td>\' + (route.duration || \'غير محدد\') + \'</td>\' +\n' +
+'                \'<td>\' + (route.distance || \'0 كم\') + \'</td>\' +\n' +
+'                \'<td>\' + (route.pointCount || route.points.length) + \'</td>\';\n' +
+'            tableBody.appendChild(row);\n' +
+'        });\n' +
+'        \n' +
+'        // إنشاء الخريطة\n' +
+'        const map = L.map(\'map\').setView([33.5, 36.3], 10);\n' +
+'        \n' +
+'        // إضافة طبقة OpenStreetMap\n' +
+'        L.tileLayer(\'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {\n' +
+'            attribution: \'© OpenStreetMap contributors\',\n' +
+'            maxZoom: 19\n' +
+'        }).addTo(map);\n' +
+'        \n' +
+'        // إضافة بوصلة الشمال\n' +
+'        const CompassControl = L.Control.extend({\n' +
+'            onAdd: function(map) {\n' +
+'                const container = L.DomUtil.create(\'div\', \'compass-control\');\n' +
+'                container.innerHTML = \'<div class="compass-arrow"></div>\';\n' +
+'                container.title = \'الشمال\';\n' +
+'                return container;\n' +
+'            }\n' +
+'        });\n' +
+'        \n' +
+'        new CompassControl({ position: \'topright\' }).addTo(map);\n' +
+'        \n' +
+'        // إضافة مقياس الرسم (Scale Bar)\n' +
+'        L.control.scale({\n' +
+'            position: \'bottomleft\',\n' +
+'            metric: true,\n' +
+'            imperial: false,\n' +
+'            maxWidth: 200\n' +
+'        }).addTo(map);\n' +
+'        \n' +
+'        // ألوان مختلفة للمسارات\n' +
+'        const colors = [\'#FF6B6B\', \'#4ECDC4\', \'#45B7D1\', \'#FFA07A\', \'#98D8C8\', \'#F7DC6F\', \'#BB8FCE\', \'#85C1E2\'];\n' +
+'        \n' +
+'        // إضافة المسارات\n' +
+'        let bounds = [];\n' +
+'        routes.forEach((route, index) => {\n' +
+'            const color = colors[index % colors.length];\n' +
+'            \n' +
+'            // إضافة خط المسار\n' +
+'            if (route.points.length > 1) {\n' +
+'                const polyline = L.polyline(route.points, {\n' +
+'                    color: color,\n' +
+'                    weight: 4,\n' +
+'                    opacity: 0.7\n' +
+'                }).addTo(map);\n' +
+'                \n' +
+'                // إضافة نقاط البداية والنهاية\n' +
+'                const startMarker = L.circleMarker(route.start, {\n' +
+'                    radius: 8,\n' +
+'                    fillColor: \'#2ecc71\',\n' +
+'                    color: \'#fff\',\n' +
+'                    weight: 2,\n' +
+'                    fillOpacity: 1\n' +
+'                }).addTo(map);\n' +
+'                \n' +
+'                startMarker.bindPopup(\n' +
+'                    \'<strong>نقطة البداية - \' + route.name + \'</strong><br>\' +\n' +
+'                    \'الإحداثيات: \' + route.start[0].toFixed(6) + \', \' + route.start[1].toFixed(6) + \'<br>\' +\n' +
+'                    \'الوقت: \' + (route.start_time || \'غير محدد\')\n' +
+'                );\n' +
+'                \n' +
+'                const endMarker = L.circleMarker(route.end, {\n' +
+'                    radius: 8,\n' +
+'                    fillColor: \'#e74c3c\',\n' +
+'                    color: \'#fff\',\n' +
+'                    weight: 2,\n' +
+'                    fillOpacity: 1\n' +
+'                }).addTo(map);\n' +
+'                \n' +
+'                endMarker.bindPopup(\n' +
+'                    \'<strong>نقطة النهاية - \' + route.name + \'</strong><br>\' +\n' +
+'                    \'الإحداثيات: \' + route.end[0].toFixed(6) + \', \' + route.end[1].toFixed(6) + \'<br>\' +\n' +
+'                    \'الوقت: \' + (route.end_time || \'غير محدد\')\n' +
+'                );\n' +
+'                \n' +
+'                bounds.push(...route.points);\n' +
+'            }\n' +
+'        });\n' +
+'        \n' +
+'        // تكبير الخريطة لتناسب جميع المسارات\n' +
+'        if (bounds.length > 0) {\n' +
+'            map.fitBounds(bounds);\n' +
+'        }\n' +
+'    </' + 'script>\n' +
+'</body>\n' +
+'</html>';
+                
+                // إنشاء ملف وتنزيله
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `تقرير_المسارات_${new Date().toISOString().slice(0, 10)}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showMessage('success', `تم إنشاء تقرير HTML بنجاح! يحتوي على ${routes.length} مسار`);
+            } catch (error) {
+                console.error('خطأ في إنشاء تقرير HTML:', error);
+                showMessage('error', 'حدث خطأ أثناء إنشاء تقرير HTML: ' + error.message);
+            }
+        }
+        
+        // دالة لإنشاء تقرير PDF
+        async function generatePDFReport() {
+            console.log('generatePDFReport: بدء إنشاء التقرير');
+            
+            // التحقق من وجود طبقات محملة
+            if (layers.length === 0) {
+                console.log('generatePDFReport: لا توجد طبقات محملة');
+                showMessage('error', 'لا توجد مسارات محملة. يرجى تحميل الملفات أولاً.');
+                return;
+            }
+            
+            console.log(`generatePDFReport: عدد الطبقات: ${layers.length}`);
+            layers.forEach((layer, index) => {
+                console.log(`  الطبقة ${index}: ${layer.name}, مرئية: ${layer.visible}, عدد النقاط: ${layer.data ? layer.data.length : 0}`);
+            });
+            
+            // جمع بيانات المسارات (شامل للمخفي)
+            const routes = collectVisibleRoutes(true);
+            
+            console.log(`generatePDFReport: عدد المسارات المجمعة: ${routes.length}`);
+            
+            if (routes.length === 0) {
+                console.log('generatePDFReport: لا توجد مسارات متاحة');
+                showMessage('error', 'لا توجد بيانات مسارات متاحة. تأكد من أن الملفات المحملة تحتوي على إحداثيات صحيحة.');
+                return;
+            }
+            
+            // طلب العنوان من المستخدم
+            const reportTitle = prompt('أدخل عنوان التقرير:', 'تقرير المسارات');
+            if (reportTitle === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            // طلب التاريخ من وإلى
+            const dateFrom = prompt('أدخل التاريخ من (مثال: 2025-01-01):', '');
+            if (dateFrom === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            const dateTo = prompt('أدخل التاريخ إلى (مثال: 2025-01-31):', '');
+            if (dateTo === null) {
+                showMessage('info', 'تم إلغاء إنشاء التقرير');
+                return;
+            }
+            
+            showMessage('info', `جاري إنشاء تقرير PDF من ${routes.length} مسار...`);
+            
+            try {
+                // إنشاء بيانات JavaScript للمسارات
+                const routesData = [];
+                let earliestDate = null;
+                let latestDate = null;
+                
+                routes.forEach((route, index) => {
+                    // الحصول على جميع النقاط للمسار من الطبقات مع بياناتها الكاملة
+                    const routePoints = [];
+                    const routePointsData = []; // لحفظ بيانات النقاط الكاملة
+                    layers.forEach(layerInfo => {
+                        if (!layerInfo.data || layerInfo.data.length === 0) return;
+                        
+                        layerInfo.data.forEach(point => {
+                            const tripId = point.tripID || point.Trip_ID || point.originalData?.Trip_ID || 
+                                         point.trip_id || point.originalData?.trip_ID || '';
+                            
+                            // إذا تطابق Trip_ID أو كان نفس اسم الملف
+                            if (tripId === route.tripId || 
+                                (!tripId && layerInfo.name === route.name) ||
+                                (tripId === 'unknown' && layerInfo.name === route.name)) {
+                                routePoints.push([point.lat, point.lng]);
+                                routePointsData.push(point); // حفظ بيانات النقطة الكاملة
+                            }
+                        });
+                    });
+                    
+                    // إذا لم نجد نقاط، استخدم نقاط البداية والنهاية فقط
+                    if (routePoints.length === 0) {
+                        routePoints.push([route.startLat, route.startLng]);
+                        routePoints.push([route.endLat, route.endLng]);
+                    }
+                    
+                    // استخراج زمن البداية والنهاية من النقاط الفعلية
+                    let actualStartTime = route.startTime || '';
+                    let actualEndTime = route.endTime || '';
+                    
+                    if (routePointsData.length > 0) {
+                        // ترتيب النقاط حسب الوقت - فلترة النقاط التي لديها وقت
+                        const sortedPoints = [...routePointsData].filter(p => {
+                            const time = p.time || p.Time || p.originalData?.Time || 
+                                       p.takeOffTime || p.TakeOffTime || p.originalData?.TakeOffTime || '';
+                            return time && time.trim() !== '';
+                        }).sort((a, b) => {
+                            const timeA = a.time || a.Time || a.originalData?.Time || 
+                                        a.takeOffTime || a.TakeOffTime || a.originalData?.TakeOffTime || '';
+                            const timeB = b.time || b.Time || b.originalData?.Time || 
+                                        b.takeOffTime || b.TakeOffTime || b.originalData?.TakeOffTime || '';
+                            if (!timeA && !timeB) return 0;
+                            if (!timeA) return 1;
+                            if (!timeB) return -1;
+                            const dateA = new Date(timeA);
+                            const dateB = new Date(timeB);
+                            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                            return dateA - dateB;
+                        });
+                        
+                        if (sortedPoints.length > 0) {
+                            const firstPoint = sortedPoints[0];
+                            const lastPoint = sortedPoints[sortedPoints.length - 1];
+                            
+                            const startTimeRaw = firstPoint.time || firstPoint.Time || firstPoint.originalData?.Time || 
+                                               firstPoint.takeOffTime || firstPoint.TakeOffTime || 
+                                               firstPoint.originalData?.TakeOffTime || route.startTime || '';
+                            const endTimeRaw = lastPoint.time || lastPoint.Time || lastPoint.originalData?.Time || 
+                                             route.endTime || '';
+                            const startDate = firstPoint.date || firstPoint.originalData?.current_Date || firstPoint.originalData?.current_date || '';
+                            const endDate = lastPoint.date || lastPoint.originalData?.current_Date || lastPoint.originalData?.current_date || '';
+                            
+                            // تحويل الأوقات إلى ISO format
+                            actualStartTime = convertTimeToISO(startTimeRaw, startDate) || startTimeRaw;
+                            actualEndTime = convertTimeToISO(endTimeRaw, endDate) || endTimeRaw;
+                        }
+                    }
+                    
+                    // إذا لم نجد أزمنة من النقاط، استخدم الأزمنة من route
+                    if ((!actualStartTime || actualStartTime.trim() === '') && route.startTime) {
+                        // محاولة تحويل وقت route أيضاً
+                        actualStartTime = convertTimeToISO(route.startTime, '') || route.startTime;
+                    }
+                    if ((!actualEndTime || actualEndTime.trim() === '') && route.endTime) {
+                        // محاولة تحويل وقت route أيضاً
+                        actualEndTime = convertTimeToISO(route.endTime, '') || route.endTime;
+                    }
+                    
+                    // حساب أقدم وأحدث تاريخ
+                    if (actualStartTime) {
+                        const startDate = new Date(actualStartTime);
+                        if (!isNaN(startDate.getTime())) {
+                            if (!earliestDate || startDate < earliestDate) {
+                                earliestDate = startDate;
+                            }
+                        }
+                    }
+                    if (actualEndTime) {
+                        const endDate = new Date(actualEndTime);
+                        if (!isNaN(endDate.getTime())) {
+                            if (!latestDate || endDate > latestDate) {
+                                latestDate = endDate;
+                            }
+                        }
+                    }
+                    
+                    // حساب المدة من زمن البداية وزمن النهاية الفعليين
+                    const calculatedDuration = calculateDuration(actualStartTime, actualEndTime);
+                    
+                    routesData.push({
+                        id: route.tripId || `route_${index + 1}`,
+                        name: route.name || `مسار ${index + 1}`,
+                        start: [route.startLat, route.startLng],
+                        end: [route.endLat, route.endLng],
+                        points: routePoints,
+                        start_time: actualStartTime,
+                        end_time: actualEndTime,
+                        duration: calculatedDuration,
+                        distance: route.distance || '0 كم',
+                        pointCount: route.pointCount || routePoints.length
+                    });
+                });
+                
+                // تنسيق نطاق التاريخ
+                const formatDate = (dateString) => {
+                    if (!dateString || dateString.trim() === '') return 'غير محدد';
+                    try {
+                        const date = new Date(dateString);
+                        if (isNaN(date.getTime())) return dateString;
+                        return date.toLocaleDateString('ar-SA', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    } catch (e) {
+                        return dateString;
+                    }
+                };
+                
+                const dateRange = (dateFrom && dateTo && dateFrom.trim() !== '' && dateTo.trim() !== '')
+                    ? `من ${formatDate(dateFrom)} إلى ${formatDate(dateTo)}`
+                    : (earliestDate && latestDate 
+                        ? `من ${formatDate(earliestDate.toISOString())} إلى ${formatDate(latestDate.toISOString())}`
+                        : 'غير محدد');
+                
+                // إنشاء محتوى HTML (نفس محتوى HTML Report ولكن بدون خريطة تفاعلية)
+                const reportDate = new Date().toLocaleString('ar-SA');
+                
+                // إنشاء جدول HTML للمسارات
+                let tableRows = '';
+                routesData.forEach((route, index) => {
+                    tableRows += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><span class="route-badge">${route.id}</span></td>
+                            <td class="coords">${route.start[0].toFixed(6)}, ${route.start[1].toFixed(6)}</td>
+                            <td class="coords">${route.end[0].toFixed(6)}, ${route.end[1].toFixed(6)}</td>
+                            <td>${route.start_time || 'غير محدد'}</td>
+                            <td>${route.end_time || 'غير محدد'}</td>
+                            <td>${route.duration || 'غير محدد'}</td>
+                            <td>${route.distance || '0 كم'}</td>
+                            <td>${route.pointCount || route.points.length}</td>
+                        </tr>
+                    `;
+                });
+                
+                const htmlContent = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${reportTitle}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+        }
+        
+        body {
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .header-top {
+            position: absolute;
+            left: 30px;
+            top: 30px;
+            text-align: left;
+        }
+        
+        .secret-label {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 2.5em;
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 8px;
+            margin-bottom: 15px;
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            line-height: 1.4;
+        }
+        
+        .operations-label {
+            color: white;
+            font-size: 2em;
+            margin-top: 10px;
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+        
+        .header-center {
+            text-align: center;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+        }
+        
+        .date-range {
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .route-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .coords {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div class="secret-label">سري للغاية</div>
+                <div class="operations-label">عمليات</div>
+            </div>
+            <div class="header-center">
+                <h1>${reportTitle}</h1>
+                <div class="date-range">${dateRange}</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">📊 جدول المسارات</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>معرّف المسار</th>
+                                <th>إحداثيات البداية</th>
+                                <th>إحداثيات النهاية</th>
+                                <th>وقت البداية</th>
+                                <th>وقت النهاية</th>
+                                <th>المدة</th>
+                                <th>المسافة</th>
+                                <th>عدد النقاط</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+                
+                // إنشاء عنصر مؤقت لعرض HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const element = tempDiv.querySelector('.container');
+                
+                // تحويل HTML إلى PDF
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: `تقرير_${reportTitle.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait'
+                    }
+                };
+                
+                await html2pdf().set(opt).from(element).save();
+                
+                // إزالة العنصر المؤقت
+                document.body.removeChild(tempDiv);
+                
+                showMessage('success', `تم إنشاء تقرير PDF بنجاح! يحتوي على ${routes.length} مسار`);
+            } catch (error) {
+                console.error('خطأ في إنشاء تقرير PDF:', error);
+                showMessage('error', 'حدث خطأ أثناء إنشاء تقرير PDF: ' + error.message);
+            }
+        }
     </script>
+    
+    <!-- Modal for selecting export folder -->
+    <div id="folderSelectModal" class="folder-select-modal">
+        <div class="modal-content">
+            <h3>اختر مجلد التصدير</h3>
+            <p style="color: #7f8c8d; margin-bottom: 20px;">اختر المجلد الذي تريد حفظ الملفات المصدرة فيه</p>
+            <div class="modal-buttons">
+                <button id="modalBtnClean" class="modal-btn modal-btn-clean" onclick="selectExportFolder('clean')">
+                    📁 مجلد البيانات النظيفة
+                </button>
+                <button id="modalBtnUnclean" class="modal-btn modal-btn-unclean" onclick="selectExportFolder('unclean')">
+                    📁 مجلد البيانات غير النظيفة
+                </button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeFolderSelectModal(true)">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 
