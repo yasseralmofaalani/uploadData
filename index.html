@@ -181,6 +181,49 @@
             box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
         }
         
+        /* المسار الذي يتم تعديله حالياً - أخضر قوي */
+        .layer-item.editing {
+            background: #c8e6c9 !important;
+            border-color: #4caf50 !important;
+            border-right: 4px solid #4caf50 !important;
+            border-left: 4px solid #4caf50 !important;
+            border-top: 2px solid #4caf50 !important;
+            border-bottom: 2px solid #4caf50 !important;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3) !important;
+        }
+        
+        .layer-item.editing:hover {
+            background: #a5d6a7 !important;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4) !important;
+        }
+        
+        /* المسارات التي تم تعديلها سابقاً - أخضر واضح */
+        .layer-item.edited {
+            background: #c8e6c9 !important;
+            border-color: #66bb6a !important;
+            border-right: 4px solid #66bb6a !important;
+            border-left: 3px solid #66bb6a !important;
+            border-top: 2px solid #66bb6a !important;
+            border-bottom: 2px solid #66bb6a !important;
+            box-shadow: 0 3px 12px rgba(102, 187, 106, 0.35) !important;
+        }
+        
+        .layer-item.edited:hover {
+            background: #a5d6a7 !important;
+            box-shadow: 0 5px 18px rgba(102, 187, 106, 0.45) !important;
+        }
+        
+        /* إذا كان المسار معدلاً ويتم تعديله حالياً - الجمع بين الاثنين */
+        .layer-item.edited.editing {
+            background: #c8e6c9 !important;
+            border-color: #4caf50 !important;
+            border-right: 4px solid #4caf50 !important;
+            border-left: 4px solid #4caf50 !important;
+            border-top: 2px solid #4caf50 !important;
+            border-bottom: 2px solid #4caf50 !important;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3) !important;
+        }
+        
         .layer-header {
             display: flex;
             justify-content: space-between;
@@ -875,7 +918,142 @@
         
         // تخزين الطبقات والبيانات
         let layers = [];
+        let globalDeleteButton = null; // زر حذف عام لجميع المسارات
+        let currentEditingLayerId = null; // معرف الطبقة التي يتم تعديلها حالياً
         let layerGroups = [];
+        
+        // دالة لإنشاء/تحديث زر الحذف العام
+        function createOrUpdateGlobalDeleteButton() {
+            if (!globalDeleteButton) {
+                globalDeleteButton = L.control({position: 'topright'});
+                globalDeleteButton.onAdd = function() {
+                    const div = L.DomUtil.create('div', 'delete-selected-btn');
+                    div.innerHTML = '<button style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); margin-bottom: 5px;">🗑️ حذف النقاط المحددة (<span id="global-selected-count">0</span>)</button>';
+                    L.DomEvent.on(div, 'click', function(e) {
+                        L.DomEvent.stopPropagation(e);
+                        deleteAllSelectedMarkers();
+                    });
+                    return div;
+                };
+                globalDeleteButton.addTo(map);
+            }
+            updateGlobalDeleteButton();
+        }
+        
+        // دالة لتحديث عدد النقاط المحددة في الزر العام
+        function updateGlobalDeleteButton() {
+            if (globalDeleteButton) {
+                const countElement = document.getElementById('global-selected-count');
+                if (countElement) {
+                    const totalSelected = getAllSelectedMarkersCount();
+                    countElement.textContent = totalSelected;
+                }
+            }
+        }
+        
+        // دالة للحصول على عدد جميع النقاط المحددة من جميع الطبقات
+        function getAllSelectedMarkersCount() {
+            let total = 0;
+            layers.forEach(layerInfo => {
+                if (layerInfo.polyline && layerInfo.polyline.selectedMarkers) {
+                    total += layerInfo.polyline.selectedMarkers.size;
+                }
+                if (layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                    layerInfo.layerGroup.polylines.forEach(polyline => {
+                        if (polyline.selectedMarkers) {
+                            total += polyline.selectedMarkers.size;
+                        }
+                    });
+                }
+            });
+            return total;
+        }
+        
+        // دالة لحذف جميع النقاط المحددة من جميع الطبقات
+        function deleteAllSelectedMarkers() {
+            let deletedCount = 0;
+            layers.forEach(layerInfo => {
+                if (layerInfo.polyline && layerInfo.polyline.deleteSelectedMarkers) {
+                    const beforeCount = layerInfo.polyline.selectedMarkers ? layerInfo.polyline.selectedMarkers.size : 0;
+                    layerInfo.polyline.deleteSelectedMarkers();
+                    deletedCount += beforeCount;
+                }
+                if (layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                    layerInfo.layerGroup.polylines.forEach(polyline => {
+                        if (polyline.deleteSelectedMarkers) {
+                            const beforeCount = polyline.selectedMarkers ? polyline.selectedMarkers.size : 0;
+                            polyline.deleteSelectedMarkers();
+                            deletedCount += beforeCount;
+                        }
+                    });
+                }
+            });
+            if (deletedCount === 0) {
+                showMessage('info', 'لم يتم تحديد أي نقاط للحذف');
+            } else {
+                updateGlobalDeleteButton();
+            }
+        }
+        
+        // دالة لإزالة زر الحذف العام
+        function removeGlobalDeleteButton() {
+            if (globalDeleteButton) {
+                map.removeControl(globalDeleteButton);
+                globalDeleteButton = null;
+            }
+        }
+        
+        // دالة للتحقق من وجود طبقات في وضع التعديل وتحديث الزر العام
+        function checkAndUpdateGlobalDeleteButton() {
+            let hasEditingLayer = false;
+            layers.forEach(layerInfo => {
+                if (layerInfo.polyline && layerInfo.polyline.isEditMode) {
+                    hasEditingLayer = true;
+                }
+                if (layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                    layerInfo.layerGroup.polylines.forEach(polyline => {
+                        if (polyline.isEditMode) {
+                            hasEditingLayer = true;
+                        }
+                    });
+                }
+            });
+            
+            if (hasEditingLayer) {
+                updateGlobalDeleteButton();
+            } else {
+                removeGlobalDeleteButton();
+            }
+        }
+        
+        // دالة لتحديث حالة الطبقة (تلوينها عند التعديل)
+        function updateLayerEditingState(layerId, isEditing) {
+            const layerElement = document.getElementById(`layer-${layerId}`);
+            if (layerElement) {
+                if (isEditing) {
+                    layerElement.classList.add('editing');
+                } else {
+                    layerElement.classList.remove('editing');
+                    // إذا كان المسار معدلاً، نضيف class edited
+                    const layerInfo = layers.find(l => l.id === layerId);
+                    if (layerInfo && layerInfo.isEdited) {
+                        layerElement.classList.add('edited');
+                    }
+                }
+            }
+        }
+        
+        // دالة لتحديث حالة المسار المعدل
+        function updateLayerEditedState(layerId, isEdited) {
+            const layerElement = document.getElementById(`layer-${layerId}`);
+            if (layerElement) {
+                if (isEdited) {
+                    layerElement.classList.add('edited');
+                } else {
+                    layerElement.classList.remove('edited');
+                }
+            }
+        }
         let colors = [
             '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
             '#1abc9c', '#e67e22', '#34495e', '#c0392b', '#16a085'
@@ -1307,25 +1485,16 @@
                     if (isEditMode) {
                         const currentCoords = polyline.getLatLngs().map(ll => [ll.lat, ll.lng]);
                         
-                        if (!deleteButton) {
-                            deleteButton = L.control({position: 'topright'});
-                            deleteButton.onAdd = function() {
-                                const div = L.DomUtil.create('div', 'delete-selected-btn');
-                                div.innerHTML = '<button style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🗑️ حذف النقاط المحددة (<span class="selected-count">0</span>)</button>';
-                                L.DomEvent.on(div, 'click', function(e) {
-                                    L.DomEvent.stopPropagation(e);
-                                    if (polyline.deleteSelectedMarkers) {
-                                        polyline.deleteSelectedMarkers();
-                                    } else {
-                                        deleteSelectedMarkers();
-                                    }
-                                });
-                                return div;
-                            };
-                            deleteButton.addTo(map);
-                        }
+                        // استخدام الزر العام بدلاً من إنشاء زر منفصل
+                        createOrUpdateGlobalDeleteButton();
                         updateDeleteButton();
                         enableBoxSelection();
+                        
+                        // تحديث حالة الطبقة - إضافة اللون الأخضر
+                        if (layerInfo && layerInfo.id) {
+                            updateLayerEditingState(layerInfo.id, true);
+                            currentEditingLayerId = layerInfo.id;
+                        }
                         
                         currentCoords.forEach((coord, index) => {
                             const marker = L.circleMarker([coord[0], coord[1]], {
@@ -1382,13 +1551,16 @@
                         editMarkers.length = 0;
                         selectedMarkers.clear();
                         disableBoxSelection();
-                        if (deleteButton) {
-                            map.removeControl(deleteButton);
-                            deleteButton = null;
-                        }
-                        if (deletePathButton) {
-                            map.removeControl(deletePathButton);
-                            deletePathButton = null;
+                        // لا نحذف الزر العام هنا، بل نتحقق من وجود طبقات أخرى في وضع التعديل
+                        checkAndUpdateGlobalDeleteButton();
+                        // تحديث حالة الطبقة - إزالة اللون الأخضر
+                        if (layerInfo && layerInfo.id) {
+                            // تعيين المسار كمعدل إذا تم تعديله
+                            layerInfo.isEdited = true;
+                            updateLayerEditingState(layerInfo.id, false);
+                            if (currentEditingLayerId === layerInfo.id) {
+                                currentEditingLayerId = null;
+                            }
                         }
                         if (layerInfo.selectedPaths) {
                             layerInfo.selectedPaths.forEach(path => {
@@ -1549,12 +1721,8 @@
                 }
                 
                 function updateDeleteButton() {
-                    if (deleteButton) {
-                        const countElements = document.querySelectorAll('.selected-count');
-                        countElements.forEach(el => {
-                            el.textContent = selectedMarkers.size;
-                        });
-                    }
+                    // تحديث الزر العام بدلاً من الزر المحلي
+                    updateGlobalDeleteButton();
                 }
                 
                 function deleteSelectedMarkers() {
@@ -1598,6 +1766,8 @@
                     
                     selectedMarkers.clear();
                     updateDeleteButton();
+                    // تحديث الزر العام
+                    updateGlobalDeleteButton();
                     showMessage('success', `تم حذف ${indicesToDelete.length} نقطة بنجاح`);
                 }
                 
@@ -1866,41 +2036,16 @@
                     // الحصول على الإحداثيات الحالية من المسار
                     const currentCoords = polyline.getLatLngs().map(ll => [ll.lat, ll.lng]);
                     
-                    // إنشاء زر حذف النقاط المحددة
-                    if (!deleteButton) {
-                        deleteButton = L.control({position: 'topright'});
-                        deleteButton.onAdd = function() {
-                            const div = L.DomUtil.create('div', 'delete-selected-btn');
-                            div.innerHTML = '<button style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); margin-bottom: 5px;">🗑️ حذف النقاط المحددة (<span id="selected-count">0</span>)</button>';
-                            L.DomEvent.on(div, 'click', function(e) {
-                                L.DomEvent.stopPropagation(e);
-                                if (polyline.deleteSelectedMarkers) {
-                                    polyline.deleteSelectedMarkers();
-                                } else {
-                                    deleteSelectedMarkers();
-                                }
-                            });
-                            return div;
-                        };
-                        deleteButton.addTo(map);
-                    }
-                    
-                    // إنشاء زر حذف المسار المحدد
-                    if (!deletePathButton) {
-                        deletePathButton = L.control({position: 'topright'});
-                        deletePathButton.onAdd = function() {
-                            const div = L.DomUtil.create('div', 'delete-path-btn');
-                            div.innerHTML = '<button style="background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🗑️ حذف المسار المحدد (<span id="selected-path-count">0</span>)</button>';
-                            L.DomEvent.on(div, 'click', function(e) {
-                                L.DomEvent.stopPropagation(e);
-                                deleteSelectedPath();
-                            });
-                            return div;
-                        };
-                        deletePathButton.addTo(map);
-                    }
+                    // استخدام الزر العام بدلاً من إنشاء زر منفصل
+                    createOrUpdateGlobalDeleteButton();
                     updateDeleteButton();
                     updateDeletePathButton();
+                    
+                    // تحديث حالة الطبقة - إضافة اللون الأخضر
+                    if (layerInfo && layerInfo.id) {
+                        updateLayerEditingState(layerInfo.id, true);
+                        currentEditingLayerId = layerInfo.id;
+                    }
                     
                     // تفعيل وضع التحديد بالسحب
                     enableBoxSelection();
@@ -1969,14 +2114,17 @@
                     // إزالة مربع التحديد
                     disableBoxSelection();
                     
-                    // إزالة أزرار الحذف
-                    if (deleteButton) {
-                        map.removeControl(deleteButton);
-                        deleteButton = null;
-                    }
-                    if (deletePathButton) {
-                        map.removeControl(deletePathButton);
-                        deletePathButton = null;
+                    // التحقق من وجود طبقات أخرى في وضع التعديل قبل إزالة الزر العام
+                    checkAndUpdateGlobalDeleteButton();
+                    
+                    // تحديث حالة الطبقة - إزالة اللون الأخضر
+                    if (layerInfo && layerInfo.id) {
+                        // تعيين المسار كمعدل إذا تم تعديله
+                        layerInfo.isEdited = true;
+                        updateLayerEditingState(layerInfo.id, false);
+                        if (currentEditingLayerId === layerInfo.id) {
+                            currentEditingLayerId = null;
+                        }
                     }
                     
                     // إلغاء تحديد جميع المسارات
@@ -2231,12 +2379,8 @@
             
             // دالة لتحديث زر الحذف
             function updateDeleteButton() {
-                if (deleteButton) {
-                    const countElement = document.getElementById('selected-count');
-                    if (countElement) {
-                        countElement.textContent = selectedMarkers.size;
-                    }
-                }
+                // تحديث الزر العام بدلاً من الزر المحلي
+                updateGlobalDeleteButton();
             }
             
             // دالة لحذف النقاط المحددة
@@ -2292,6 +2436,9 @@
                 // تحديث البيانات
                 updateLayerDataFromPolyline(layerInfo.id, polyline);
                 
+                // تحديث الزر العام
+                updateGlobalDeleteButton();
+                
                 showMessage('success', `تم حذف ${indicesToDelete.length} نقطة بنجاح`);
             }
             
@@ -2329,6 +2476,10 @@
             const container = document.getElementById('layersContainer');
             const layerItem = document.createElement('div');
             layerItem.className = 'layer-item';
+            // إضافة class edited إذا كان المسار معدلاً
+            if (layerInfo.isEdited) {
+                layerItem.classList.add('edited');
+            }
             layerItem.id = `layer-${layerInfo.id}`;
             
             layerItem.innerHTML = `
@@ -4238,6 +4389,7 @@
             // تحديث البيانات
             layerInfo.data = newData;
             layerInfo.isEdited = true;
+            updateLayerEditedState(layerId, true);
             
             // تحديث الإحصائيات
             updateStats();
@@ -4264,6 +4416,26 @@
                 return;
             }
             
+            // إلغاء وضع التعديل من الطبقة السابقة إن وجدت
+            if (currentEditingLayerId && currentEditingLayerId !== layerId) {
+                const previousLayer = layers.find(l => l.id === currentEditingLayerId);
+                if (previousLayer) {
+                    if (previousLayer.polyline && previousLayer.polyline.isEditMode && previousLayer.polyline.toggleEditMode) {
+                        previousLayer.polyline.toggleEditMode();
+                        previousLayer.polyline.isEditMode = false;
+                    }
+                    if (previousLayer.layerGroup && previousLayer.layerGroup.polylines) {
+                        previousLayer.layerGroup.polylines.forEach(polyline => {
+                            if (polyline.isEditMode && polyline.toggleEditMode) {
+                                polyline.toggleEditMode();
+                                polyline.isEditMode = false;
+                            }
+                        });
+                    }
+                    updateLayerEditingState(currentEditingLayerId, false);
+                }
+            }
+            
             // التأكد من أن الطبقة ظاهرة
             if (!layerInfo.visible) {
                 toggleLayer(layerId);
@@ -4275,14 +4447,59 @@
                     layerInfo.polyline.toggleEditMode();
                     layerInfo.polyline.isEditMode = !layerInfo.polyline.isEditMode;
                     if (layerInfo.polyline.isEditMode) {
+                        currentEditingLayerId = layerId;
+                        updateLayerEditingState(layerId, true);
+                        // الانتقال والتصغير للمسار على الخريطة
+                        setTimeout(() => {
+                            try {
+                                // التأكد من أن الطبقة ظاهرة على الخريطة
+                                if (!map.hasLayer(layerInfo.layerGroup)) {
+                                    map.addLayer(layerInfo.layerGroup);
+                                }
+                                
+                                let bounds = null;
+                                
+                                // محاولة الحصول على الحدود من polyline أولاً
+                                if (layerInfo.polyline && typeof layerInfo.polyline.getBounds === 'function') {
+                                    try {
+                                        bounds = layerInfo.polyline.getBounds();
+                                    } catch (e) {
+                                        // تجاهل الأخطاء
+                                    }
+                                }
+                                
+                                // إذا لم نحصل على الحدود من polyline، جرب layerGroup
+                                if ((!bounds || !bounds.isValid || !bounds.isValid()) && layerInfo.layerGroup && typeof layerInfo.layerGroup.getBounds === 'function') {
+                                    try {
+                                        bounds = layerInfo.layerGroup.getBounds();
+                                    } catch (e) {
+                                        // تجاهل الأخطاء
+                                    }
+                                }
+                                
+                                // تطبيق الحدود على الخريطة
+                                if (bounds && bounds.isValid && bounds.isValid()) {
+                                    map.fitBounds(bounds, { padding: [100, 100], maxZoom: 15, animate: true });
+                                }
+                            } catch (e) {
+                                console.log('خطأ في الانتقال للمسار:', e);
+                            }
+                        }, 100);
                         showMessage('info', 'تم تفعيل وضع التعديل. اسحب النقاط الحمراء لتعديل المسار. اسحب بالزر الأيسر لتحديد عدة نقاط، أو اضغط Shift/Ctrl+Click لتحديد نقطة واحدة. ثم اضغط زر "حذف النقاط المحددة".');
                     } else {
+                        currentEditingLayerId = null;
+                        updateLayerEditingState(layerId, false);
                         // تحديث البيانات عند إلغاء وضع التعديل
                         updateLayerDataFromPolyline(layerId, layerInfo.polyline);
+                        // تعيين المسار كمعدل
+                        layerInfo.isEdited = true;
+                        updateLayerEditedState(layerId, true);
+                        checkAndUpdateGlobalDeleteButton();
                         showMessage('success', 'تم حفظ التعديلات');
                     }
                 }
             } else if (layerInfo.layerGroup.polylines && layerInfo.layerGroup.polylines.length > 0) {
+                const wasEditing = layerInfo.layerGroup.polylines[0].isEditMode;
                 layerInfo.layerGroup.polylines.forEach(polyline => {
                     if (polyline.toggleEditMode) {
                         polyline.toggleEditMode();
@@ -4290,8 +4507,62 @@
                     }
                 });
                 if (layerInfo.layerGroup.polylines[0].isEditMode) {
+                    currentEditingLayerId = layerId;
+                    updateLayerEditingState(layerId, true);
+                    // الانتقال والتصغير للمسار على الخريطة
+                    setTimeout(() => {
+                        try {
+                            // التأكد من أن الطبقة ظاهرة على الخريطة
+                            if (!map.hasLayer(layerInfo.layerGroup)) {
+                                map.addLayer(layerInfo.layerGroup);
+                            }
+                            
+                            let bounds = null;
+                            
+                            // محاولة الحصول على الحدود من layerGroup
+                            if (layerInfo.layerGroup && typeof layerInfo.layerGroup.getBounds === 'function') {
+                                bounds = layerInfo.layerGroup.getBounds();
+                            }
+                            
+                            // إذا لم نحصل على الحدود من layerGroup، جرب polylines
+                            if ((!bounds || !bounds.isValid || !bounds.isValid()) && layerInfo.layerGroup.polylines && layerInfo.layerGroup.polylines.length > 0) {
+                                const allBounds = L.latLngBounds([]);
+                                layerInfo.layerGroup.polylines.forEach(polyline => {
+                                    try {
+                                        const polylineBounds = polyline.getBounds();
+                                        if (polylineBounds && polylineBounds.isValid && polylineBounds.isValid()) {
+                                            allBounds.extend(polylineBounds);
+                                        }
+                                    } catch (e) {
+                                        // تجاهل الأخطاء
+                                    }
+                                });
+                                if (allBounds.isValid && allBounds.isValid()) {
+                                    bounds = allBounds;
+                                }
+                            }
+                            
+                            // إذا لم نحصل على الحدود، جرب polyline مباشرة
+                            if ((!bounds || !bounds.isValid || !bounds.isValid()) && layerInfo.polyline) {
+                                try {
+                                    bounds = layerInfo.polyline.getBounds();
+                                } catch (e) {
+                                    // تجاهل الأخطاء
+                                }
+                            }
+                            
+                            // تطبيق الحدود على الخريطة
+                            if (bounds && bounds.isValid && bounds.isValid()) {
+                                map.fitBounds(bounds, { padding: [100, 100], maxZoom: 15, animate: true });
+                            }
+                        } catch (e) {
+                            console.log('خطأ في الانتقال للمسار:', e);
+                        }
+                    }, 100);
                     showMessage('info', 'تم تفعيل وضع التعديل. اسحب النقاط الحمراء لتعديل المسار. اسحب بالزر الأيسر لتحديد عدة نقاط، أو اضغط Shift/Ctrl+Click لتحديد نقطة واحدة. ثم اضغط زر "حذف النقاط المحددة".');
                 } else {
+                    currentEditingLayerId = null;
+                    updateLayerEditingState(layerId, false);
                     // تحديث البيانات من جميع المسارات
                     const allLatlngs = [];
                     layerInfo.layerGroup.polylines.forEach(polyline => {
@@ -4318,6 +4589,8 @@
                     });
                     layerInfo.data = newData;
                     layerInfo.isEdited = true;
+                    updateLayerEditedState(layerId, true);
+                    checkAndUpdateGlobalDeleteButton();
                     showMessage('success', 'تم حفظ التعديلات');
                 }
             } else {
