@@ -824,6 +824,40 @@
         .delete-selected-btn button:active {
             transform: translateY(0);
         }
+        
+        .undo-btn {
+            margin: 10px;
+        }
+        
+        .undo-btn button {
+            background: #3498db !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            font-weight: bold !important;
+            font-size: 14px !important;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4) !important;
+            transition: all 0.3s ease !important;
+            z-index: 10000 !important;
+        }
+        
+        .undo-btn button:hover {
+            background: #2980b9 !important;
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.5) !important;
+            transform: translateY(-2px);
+        }
+        
+        .undo-btn button:active {
+            transform: translateY(0);
+        }
+        
+        .undo-btn button:disabled {
+            background: #95a5a6 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+        }
     </style>
 </head>
 <body>
@@ -919,8 +953,13 @@
         // تخزين الطبقات والبيانات
         let layers = [];
         let globalDeleteButton = null; // زر حذف عام لجميع المسارات
+        let globalUndoButton = null; // زر تراجع عام
         let currentEditingLayerId = null; // معرف الطبقة التي يتم تعديلها حالياً
         let layerGroups = [];
+        
+        // نظام التراجع - حفظ الحالات السابقة
+        let undoHistory = []; // مصفوفة لحفظ حالات التراجع
+        const MAX_UNDO_HISTORY = 50; // الحد الأقصى لعدد عمليات التراجع المحفوظة
         
         // دالة لإنشاء/تحديث زر الحذف العام
         function createOrUpdateGlobalDeleteButton() {
@@ -992,6 +1031,7 @@
                 showMessage('info', 'لم يتم تحديد أي نقاط للحذف');
             } else {
                 updateGlobalDeleteButton();
+                updateUndoButton();
             }
         }
         
@@ -1021,8 +1061,289 @@
             
             if (hasEditingLayer) {
                 updateGlobalDeleteButton();
+                createOrUpdateUndoButton();
             } else {
                 removeGlobalDeleteButton();
+                removeUndoButton();
+            }
+        }
+        
+        // دالة لحفظ حالة المسار قبل التعديل
+        function saveStateForUndo(layerId, operationType) {
+            const layerInfo = layers.find(l => l.id === layerId);
+            if (!layerInfo) {
+                console.warn('لم يتم العثور على layerInfo للتراجع:', layerId);
+                return;
+            }
+            
+            // البحث عن polyline - قد يكون في layerInfo.polyline أو في layerGroup.polylines
+            let polyline = layerInfo.polyline;
+            if (!polyline && layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                // إذا كان هناك عدة polylines، نأخذ الأول النشط
+                polyline = layerInfo.layerGroup.polylines.find(p => p.isEditMode) || 
+                          (layerInfo.layerGroup.polylines.length > 0 ? layerInfo.layerGroup.polylines[0] : null);
+            }
+            
+            if (!polyline) {
+                console.warn('لم يتم العثور على polyline للتراجع:', layerId);
+                return;
+            }
+            
+            const currentLatLngs = polyline.getLatLngs();
+            
+            // حفظ الإحداثيات الحالية
+            const savedState = {
+                layerId: layerId,
+                operationType: operationType, // 'delete', 'edit', 'deletePath'
+                timestamp: Date.now(),
+                coordinates: currentLatLngs.map(ll => ({
+                    lat: ll.lat || ll[0],
+                    lng: ll.lng || ll[1]
+                })),
+                editMarkersCount: polyline.editMarkers ? polyline.editMarkers.length : 0,
+                selectedMarkersCount: polyline.selectedMarkers ? polyline.selectedMarkers.size : 0,
+                layerData: layerInfo.data ? JSON.parse(JSON.stringify(layerInfo.data)) : null,
+                polylineId: polyline._leaflet_id || null, // حفظ معرف polyline لتسهيل العثور عليه
+                hasPolylineDirect: !!layerInfo.polyline // هل polyline موجود مباشرة في layerInfo
+            };
+            
+            // إضافة الحالة إلى التاريخ
+            undoHistory.push(savedState);
+            
+            // الحد من حجم التاريخ
+            if (undoHistory.length > MAX_UNDO_HISTORY) {
+                undoHistory.shift();
+            }
+            
+            // تحديث زر التراجع
+            updateUndoButton();
+            
+            // التأكد من أن زر التراجع مرئي
+            if (!globalUndoButton && undoHistory.length > 0) {
+                createOrUpdateUndoButton();
+            }
+        }
+        
+        // دالة لاستعادة الحالة السابقة
+        function undoLastOperation() {
+            if (undoHistory.length === 0) {
+                showMessage('info', 'لا توجد عمليات للتراجع عنها');
+                return;
+            }
+            
+            const lastState = undoHistory.pop();
+            const layerInfo = layers.find(l => l.id === lastState.layerId);
+            
+            if (!layerInfo) {
+                showMessage('error', 'تعذر العثور على الطبقة للتراجع');
+                updateUndoButton();
+                return;
+            }
+            
+            // البحث عن polyline - قد يكون في layerInfo.polyline أو في layerGroup.polylines
+            let polyline = null;
+            
+            // إذا كان polyline موجوداً مباشرة في layerInfo
+            if (lastState.hasPolylineDirect && layerInfo.polyline) {
+                polyline = layerInfo.polyline;
+            } 
+            // إذا كان polyline موجوداً في layerGroup.polylines
+            else if (layerInfo.layerGroup && layerInfo.layerGroup.polylines) {
+                // محاولة العثور على polyline باستخدام المعرف المحفوظ
+                if (lastState.polylineId) {
+                    polyline = layerInfo.layerGroup.polylines.find(p => p._leaflet_id === lastState.polylineId);
+                }
+                // إذا لم نجد باستخدام المعرف، نأخذ الأول النشط أو الأول
+                if (!polyline) {
+                    polyline = layerInfo.layerGroup.polylines.find(p => p.isEditMode) || 
+                              (layerInfo.layerGroup.polylines.length > 0 ? layerInfo.layerGroup.polylines[0] : null);
+                }
+            }
+            // محاولة أخيرة: البحث في layerInfo.polyline
+            if (!polyline && layerInfo.polyline) {
+                polyline = layerInfo.polyline;
+            }
+            
+            if (!polyline) {
+                console.warn('تعذر العثور على polyline للتراجع:', {
+                    layerId: lastState.layerId,
+                    hasPolylineDirect: lastState.hasPolylineDirect,
+                    polylineId: lastState.polylineId,
+                    hasLayerGroup: !!layerInfo.layerGroup,
+                    polylinesCount: layerInfo.layerGroup?.polylines?.length || 0
+                });
+                showMessage('error', 'تعذر العثور على المسار للتراجع');
+                updateUndoButton();
+                return;
+            }
+            
+            // استعادة الإحداثيات
+            const restoredCoords = lastState.coordinates.map(coord => [coord.lat, coord.lng]);
+            polyline.setLatLngs(restoredCoords);
+            
+            // تحديث علامات التعديل الموجودة
+            if (polyline.editMarkers) {
+                const currentMarkers = polyline.editMarkers;
+                const layerGroup = layerGroups.find(lg => lg._leaflet_id === layerInfo.layerGroup._leaflet_id);
+                
+                // إذا كان عدد العلامات أقل من الإحداثيات المستعادة، نحتاج لإضافة علامات جديدة
+                if (currentMarkers.length < restoredCoords.length && layerGroup) {
+                    // إضافة علامات جديدة للفروق
+                    for (let i = currentMarkers.length; i < restoredCoords.length; i++) {
+                        const marker = L.circleMarker([restoredCoords[i][0], restoredCoords[i][1]], {
+                            radius: 6,
+                            fillColor: '#ff0000',
+                            color: '#ffffff',
+                            weight: 2,
+                            fillOpacity: 0.8,
+                            draggable: true
+                        }).addTo(layerGroup);
+                        
+                        // إضافة معالجات الأحداث (نحتاج للبحث عن الكود الأصلي لإعادة استخدامه)
+                        let dragStarted = false;
+                        marker.on('dragstart', function() {
+                            if (!dragStarted) {
+                                dragStarted = true;
+                                if (layerInfo && layerInfo.id) {
+                                    saveStateForUndo(layerInfo.id, 'edit');
+                                }
+                            }
+                        });
+                        
+                        marker.on('dragend', function() {
+                            dragStarted = false;
+                        });
+                        
+                        marker.on('drag', function() {
+                            const newLatLng = marker.getLatLng();
+                            const currentLatLngs = polyline.getLatLngs();
+                            const newCoords = currentLatLngs.map(ll => [ll.lat, ll.lng]);
+                            const markerIndex = currentMarkers.indexOf(marker);
+                            if (markerIndex > -1) {
+                                newCoords[markerIndex] = [newLatLng.lat, newLatLng.lng];
+                                polyline.setLatLngs(newCoords);
+                                
+                                currentMarkers.forEach((m, i) => {
+                                    if (i !== markerIndex && i < newCoords.length) {
+                                        m.setLatLng(newCoords[i]);
+                                    }
+                                });
+                                
+                                updatePathMarkers(polyline);
+                            }
+                        });
+                        
+                        marker.on('click', function(e) {
+                            e.originalEvent.stopPropagation();
+                            L.DomEvent.stop(e);
+                            if (polyline.toggleMarkerSelection) {
+                                polyline.toggleMarkerSelection(marker);
+                            }
+                        });
+                        
+                        marker.on('mousedown', function(e) {
+                            e.originalEvent.stopPropagation();
+                            L.DomEvent.stop(e);
+                        });
+                        
+                        currentMarkers.push(marker);
+                    }
+                }
+                
+                // إذا كان عدد العلامات أكثر من الإحداثيات، نحذف العلامات الزائدة
+                if (currentMarkers.length > restoredCoords.length) {
+                    for (let i = restoredCoords.length; i < currentMarkers.length; i++) {
+                        currentMarkers[i].remove();
+                    }
+                    currentMarkers.splice(restoredCoords.length);
+                }
+                
+                // تحديث مواقع جميع العلامات
+                restoredCoords.forEach((coord, index) => {
+                    if (currentMarkers[index]) {
+                        currentMarkers[index].setLatLng([coord[0], coord[1]]);
+                        // إعادة تعيين النمط الافتراضي
+                        currentMarkers[index].setStyle({
+                            fillColor: '#ff0000',
+                            color: '#ffffff',
+                            weight: 2
+                        });
+                    }
+                });
+                
+                // مسح التحديد
+                if (polyline.selectedMarkers) {
+                    polyline.selectedMarkers.clear();
+                }
+            }
+            
+            // استعادة البيانات إذا كانت موجودة
+            if (lastState.layerData && layerInfo.data) {
+                layerInfo.data = lastState.layerData;
+            }
+            
+            // تحديث علامات البداية والنهاية
+            updatePathMarkers(polyline);
+            
+            // تحديث البيانات
+            if (updateLayerDataFromPolyline) {
+                updateLayerDataFromPolyline(layerInfo.id, polyline);
+            }
+            
+            // تحديث الأزرار
+            updateGlobalDeleteButton();
+            updateUndoButton();
+            
+            showMessage('success', 'تم التراجع عن العملية الأخيرة بنجاح');
+        }
+        
+        // دالة لإنشاء/تحديث زر التراجع
+        function createOrUpdateUndoButton() {
+            if (!globalUndoButton) {
+                globalUndoButton = L.control({position: 'topright'});
+                globalUndoButton.onAdd = function() {
+                    const div = L.DomUtil.create('div', 'undo-btn');
+                    div.innerHTML = '<button id="undo-button" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">↶ تراجع</button>';
+                    L.DomEvent.on(div, 'click', function(e) {
+                        L.DomEvent.stopPropagation(e);
+                        undoLastOperation();
+                    });
+                    return div;
+                };
+                globalUndoButton.addTo(map);
+            }
+            updateUndoButton();
+        }
+        
+        // دالة لتحديث حالة زر التراجع
+        function updateUndoButton() {
+            // إذا لم يكن الزر موجوداً وكان هناك عمليات للتراجع عنها، أنشئه
+            if (!globalUndoButton && undoHistory.length > 0) {
+                createOrUpdateUndoButton();
+                return;
+            }
+            
+            if (globalUndoButton) {
+                const undoButton = document.getElementById('undo-button');
+                if (undoButton) {
+                    if (undoHistory.length > 0) {
+                        undoButton.disabled = false;
+                        undoButton.style.opacity = '1';
+                        undoButton.style.cursor = 'pointer';
+                    } else {
+                        undoButton.disabled = true;
+                        undoButton.style.opacity = '0.6';
+                        undoButton.style.cursor = 'not-allowed';
+                    }
+                }
+            }
+        }
+        
+        // دالة لإزالة زر التراجع
+        function removeUndoButton() {
+            if (globalUndoButton) {
+                map.removeControl(globalUndoButton);
+                globalUndoButton = null;
             }
         }
         
@@ -1487,6 +1808,7 @@
                         
                         // استخدام الزر العام بدلاً من إنشاء زر منفصل
                         createOrUpdateGlobalDeleteButton();
+                        createOrUpdateUndoButton();
                         updateDeleteButton();
                         enableBoxSelection();
                         
@@ -1505,6 +1827,21 @@
                                 fillOpacity: 0.8,
                                 draggable: true
                             }).addTo(layerGroup);
+                            
+                            let dragStarted = false;
+                            marker.on('dragstart', function() {
+                                if (!dragStarted) {
+                                    dragStarted = true;
+                                    const layerInfo = layers.find(l => l.polyline === polyline || (l.layerGroup && l.layerGroup.polylines && l.layerGroup.polylines.includes(polyline)));
+                                    if (layerInfo) {
+                                        saveStateForUndo(layerInfo.id, 'edit');
+                                    }
+                                }
+                            });
+                            
+                            marker.on('dragend', function() {
+                                dragStarted = false;
+                            });
                             
                             marker.on('drag', function() {
                                 const newLatLng = marker.getLatLng();
@@ -1737,6 +2074,14 @@
                         return;
                     }
                     
+                    // حفظ الحالة قبل الحذف
+                    const layerInfo = polyline.layerInfo || layers.find(l => l.polyline === polyline || (l.layerGroup && l.layerGroup.polylines && l.layerGroup.polylines.includes(polyline)));
+                    if (layerInfo && layerInfo.id) {
+                        saveStateForUndo(layerInfo.id, 'delete');
+                    } else {
+                        console.warn('تعذر العثور على layerInfo لحفظ الحالة للتراجع');
+                    }
+                    
                     const indicesToDelete = [];
                     selectedMarkers.forEach(marker => {
                         const index = editMarkers.indexOf(marker);
@@ -1768,6 +2113,7 @@
                     updateDeleteButton();
                     // تحديث الزر العام
                     updateGlobalDeleteButton();
+                    updateUndoButton();
                     showMessage('success', `تم حذف ${indicesToDelete.length} نقطة بنجاح`);
                 }
                 
@@ -1795,6 +2141,7 @@
                 polyline.toggleEditMode = toggleEditMode;
                 polyline.deleteSelectedMarkers = deleteSelectedMarkers;
                 polyline.disableBoxSelection = disableBoxSelection;
+                polyline.layerInfo = layerInfo; // إضافة مرجع layerInfo إلى polyline
                 polyline.isEditMode = false;
                 
                 polylines.push(polyline);
@@ -2061,6 +2408,20 @@
                             draggable: true
                         }).addTo(layerGroup);
                         
+                        let dragStarted = false;
+                        marker.on('dragstart', function() {
+                            if (!dragStarted) {
+                                dragStarted = true;
+                                if (layerInfo && layerInfo.id) {
+                                    saveStateForUndo(layerInfo.id, 'edit');
+                                }
+                            }
+                        });
+                        
+                        marker.on('dragend', function() {
+                            dragStarted = false;
+                        });
+                        
                         marker.on('drag', function() {
                             const newLatLng = marker.getLatLng();
                             const currentLatLngs = polyline.getLatLngs();
@@ -2152,6 +2513,11 @@
                     return;
                 }
                 
+                // حفظ الحالة قبل الحذف
+                if (layerInfo && layerInfo.id) {
+                    saveStateForUndo(layerInfo.id, 'deletePath');
+                }
+                
                 // حذف المسار المحدد
                 layerInfo.selectedPaths.forEach(path => {
                     // إزالة المسار من الخريطة
@@ -2202,6 +2568,7 @@
                 updateDeletePathButton();
                 updateStats();
                 updateLayerDataFromPolyline(layerInfo.id, polyline);
+                updateUndoButton();
                 
                 showMessage('success', `تم حذف ${deletedCount} مسار بنجاح`);
             }
@@ -2396,6 +2763,11 @@
                     return;
                 }
                 
+                // حفظ الحالة قبل الحذف
+                if (layerInfo && layerInfo.id) {
+                    saveStateForUndo(layerInfo.id, 'delete');
+                }
+                
                 // حذف النقاط المحددة
                 const indicesToDelete = [];
                 selectedMarkers.forEach(marker => {
@@ -2438,6 +2810,7 @@
                 
                 // تحديث الزر العام
                 updateGlobalDeleteButton();
+                updateUndoButton();
                 
                 showMessage('success', `تم حذف ${indicesToDelete.length} نقطة بنجاح`);
             }
@@ -2450,6 +2823,7 @@
             polyline.deleteSelectedPath = deleteSelectedPath;
             polyline.disableBoxSelection = disableBoxSelection;
             polyline.updateDeletePathButton = updateDeletePathButton;
+            polyline.layerInfo = layerInfo; // إضافة مرجع layerInfo إلى polyline
             polyline.isEditMode = false;
             
             // تهيئة قائمة المسارات المحددة
